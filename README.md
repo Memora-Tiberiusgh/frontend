@@ -10,7 +10,7 @@ The fornt end of the memora application
 
 ![Login page](.img/memora-login.png "Login page")
 
-![Flashcard](.img/memora-flash.png "Flashcard")
+![Flashcard](.img/memora-flashcard.png "Flashcard")
 
 ## Authors and acknowledgment
 
