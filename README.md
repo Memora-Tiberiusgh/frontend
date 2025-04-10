@@ -8,8 +8,8 @@ The fornt end of the memora application
 
 ## Visuals
 
-[](./memora-login.png)
-[](./memora-flashcard.png)
+![Login page](.img/memora-login.png "Login page")
+![Flashcard](.img/memora-login.png "Flashcard")
 
 ## Authors and acknowledgment
 
