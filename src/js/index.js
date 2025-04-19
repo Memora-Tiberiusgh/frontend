@@ -10,3 +10,5 @@
  * @author Tiberius Gherac <tg222hh@student.lnu.se>
  * @version 1.0.0
  */
+
+import "./components/memora-login"
