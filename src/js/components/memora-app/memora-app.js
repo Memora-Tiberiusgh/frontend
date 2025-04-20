@@ -56,6 +56,21 @@ customElements.define(
           if (user) {
             // User is logged in, create and append main page component
             const mainPageComponent = document.createElement("memora-main")
+
+            // Get the token and add it to user profile
+            user.getIdToken().then((token) => {
+              const userProfile = {
+                uid: user.uid,
+                displayName: user.displayName,
+                email: user.email,
+                photoURL: user.photoURL,
+                token: token,
+              }
+
+              // Set the user profile data
+              mainPageComponent.userProfile = userProfile
+            })
+
             // Store reference to the component
             this.mainComponent = mainPageComponent
 
@@ -80,15 +95,9 @@ customElements.define(
      * @private
      */
     #handleLogout() {
-      auth
-        .signOut()
-        .then(() => {
-          console.log("User logged out successfully")
-          // Auth state listener will automatically handle showing the login component
-        })
-        .catch((error) => {
-          console.error("Error logging out:", error)
-        })
+      auth.signOut().catch((error) => {
+        //:TODO: Implement logger
+      })
 
       // Remove the event listener when logout is triggered
       if (this.mainComponent) {
