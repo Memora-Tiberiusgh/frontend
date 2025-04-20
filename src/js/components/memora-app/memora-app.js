@@ -21,32 +21,48 @@ customElements.define(
 
       this.#container = this.shadowRoot.getElementById("component-container")
 
-      // Create and add login component
-      const loginComponent = document.createElement("memora-login")
-      this.#container.appendChild(loginComponent)
-    }
+      // Simple routing based on pathname
+      const path = window.location.pathname
 
+      if (path === "/terms.html") {
+        const termsComponent = document.createElement("memora-terms")
+        this.#container.appendChild(termsComponent)
+      } else if (path === "/privacy.html") {
+        const privacyComponent = document.createElement("memora-privacy")
+        this.#container.appendChild(privacyComponent)
+      } else {
+        // Default login flow
+        const loginComponent = document.createElement("memora-login")
+        this.#container.appendChild(loginComponent)
+      }
+    }
     /**
      * Called when the element is connected to the DOM.
      */
     connectedCallback() {
-      // Set up auth state listener
-      this.unsubscribe = auth.onAuthStateChanged((user) => {
-        // Clear the container
-        while (this.#container.firstChild) {
-          this.#container.removeChild(this.#container.firstChild)
-        }
+      // Get the current path
+      const path = window.location.pathname
 
-        if (user) {
-          // User is logged in, create and append main page component
-          const mainPageComponent = document.createElement("memora-mainPage")
-          this.#container.appendChild(mainPageComponent)
-        } else {
-          // User is logged out, create and append login component
-          const loginComponent = document.createElement("memora-login")
-          this.#container.appendChild(loginComponent)
-        }
-      })
+      // Only set up auth listener for main app routes, not for special pages
+      if (path !== "/terms.html" && path !== "/privacy.html") {
+        // Set up auth state listener for normal app flow
+        this.unsubscribe = auth.onAuthStateChanged((user) => {
+          // Clear the container
+          while (this.#container.firstChild) {
+            this.#container.removeChild(this.#container.firstChild)
+          }
+
+          if (user) {
+            // User is logged in, create and append main page component
+            const mainPageComponent = document.createElement("memora-main")
+            this.#container.appendChild(mainPageComponent)
+          } else {
+            // User is logged out, create and append login component
+            const loginComponent = document.createElement("memora-login")
+            this.#container.appendChild(loginComponent)
+          }
+        })
+      }
     }
 
     /**
