@@ -3,7 +3,7 @@
  * @module memora-main.html
  */
 // Define the HTML template.
-export const htmlTemplate = document.createElement("template");
+export const htmlTemplate = document.createElement("template")
 htmlTemplate.innerHTML = `
     <div class="memora-app">
         <!-- Sidebar -->
@@ -11,14 +11,14 @@ htmlTemplate.innerHTML = `
             <div class="memora-header">
                 <div class="memora-logo">Memora</div>
                 <div class="memora-social-icons">
-                    <a href="https://www.linkedin.com/in/tiberius-gh/" target="_blank" class="memora-social-icon" title="Connect on LinkedIn">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-                        </svg>
-                    </a>
                     <a href="https://gitlab.lnu.se/1dv613/student/tg222hh/memora" target="_blank" class="memora-social-icon" title="View projects on GitLab">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M22.65 14.39L12 22.13 1.35 14.39a.84.84 0 0 1-.3-.94l1.22-3.78 2.44-7.51A.42.42 0 0 1 4.82 2a.43.43 0 0 1 .58 0 .42.42 0 0 1 .11.18l2.44 7.49h8.1l2.44-7.51A.42.42 0 0 1 18.6 2a.43.43 0 0 1 .58 0 .42.42 0 0 1 .11.18l2.44 7.51L23 13.45a.84.84 0 0 1-.35.94z"></path>
+                        </svg>
+                    </a>
+                    <a href="https://www.linkedin.com/in/tiberius-gh/" target="_blank" class="memora-social-icon" title="Connect on LinkedIn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
                         </svg>
                     </a>
                 </div>
@@ -27,18 +27,9 @@ htmlTemplate.innerHTML = `
             <h2 class="memora-collections-title">My Collections</h2>
 
             <ul class="memora-collections-list">
-                <li class="memora-collection-item">Swedish Basics</li>
-                <li class="memora-collection-item">French Vocabulary</li>
-                <li class="memora-collection-item">JavaScript Fundamentals</li>
-                <li class="memora-collection-item public">
-                    AI Prompt Engineering
-                    <span class="memora-public-badge">Public</span>
-                </li>
-                <li class="memora-collection-item">Computer Science</li>
-                <li class="memora-collection-item public">
-                    Programming Tips
-                    <span class="memora-public-badge">Public</span>
-                </li>
+                <!-- Collections will be rendered dynamically here -->
+                <li class="memora-loading-message" style="display: none;">Loading collections...</li>
+                <li class="memora-error-message" style="display: none;">Error loading collections. Please try again.</li>
             </ul>
 
             <!-- Add collection button -->
@@ -98,4 +89,4 @@ htmlTemplate.innerHTML = `
             </div>
         </div>
     </div>
-`;
+`

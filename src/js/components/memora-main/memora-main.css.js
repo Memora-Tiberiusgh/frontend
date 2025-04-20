@@ -361,6 +361,16 @@ cssTemplate.innerHTML = `
         display: block;
     }
 
+    .memora-loading-message, .memora-error-message {
+        padding: 10px;
+        color: var(--text-dark);
+        font-style: italic;
+    }
+
+    .memora-error-message {
+        color: var(--error, #e53935);
+    }
+
     /* Responsive styles */
     @media (max-width: 992px) {
         .memora-app {

@@ -7,107 +7,20 @@ customElements.define(
    * Extends the HTMLElement
    */
   class extends HTMLElement {
-    #collections = [
-      {
-        id: 1,
-        name: "Swedish Basics",
-        isPublic: false,
-        cards: [
-          { question: "Hur säger man 'hello' på svenska?", answer: "Hej" },
-          { question: "Vad är 'thank you' på svenska?", answer: "Tack" },
-        ],
-      },
-      {
-        id: 2,
-        name: "French Vocabulary",
-        isPublic: false,
-        cards: [
-          {
-            question: "Comment dit-on 'hello' en français?",
-            answer: "Bonjour",
-          },
-          {
-            question: "Comment dit-on 'thank you' en français?",
-            answer: "Merci",
-          },
-        ],
-      },
-      {
-        id: 3,
-        name: "JavaScript Fundamentals",
-        isPublic: false,
-        cards: [
-          {
-            question: "What is a closure in JavaScript?",
-            answer:
-              "A function that has access to its own scope, the outer function's scope, and the global scope",
-          },
-          {
-            question: "Hur loggar man i consolen i JavaScript?",
-            answer: "Man frågar chatGPT",
-          },
-          {
-            question: "What is the difference between let and var?",
-            answer: "let is block-scoped, var is function-scoped",
-          },
-        ],
-      },
-      {
-        id: 4,
-        name: "AI Prompt Engineering",
-        isPublic: true,
-        cards: [
-          {
-            question: "What is a prompt?",
-            answer: "Instructions given to an AI to guide its output",
-          },
-          {
-            question: "What is temperature in AI?",
-            answer: "A parameter that controls randomness in generation",
-          },
-        ],
-      },
-      {
-        id: 5,
-        name: "Computer Science",
-        isPublic: false,
-        cards: [
-          {
-            question: "What is a data structure?",
-            answer: "A specialized format for organizing and storing data",
-          },
-          {
-            question: "What is an algorithm?",
-            answer: "A step-by-step procedure for solving a problem",
-          },
-        ],
-      },
-      {
-        id: 6,
-        name: "Programming Tips",
-        isPublic: true,
-        cards: [
-          {
-            question: "What is DRY?",
-            answer: "Don't Repeat Yourself - a principle to reduce repetition",
-          },
-          {
-            question: "What is SOLID?",
-            answer:
-              "Five design principles for OOP: Single responsibility, Open-closed, Liskov substitution, Interface segregation, Dependency inversion",
-          },
-        ],
-      },
-    ]
-
+    #collections = []
     #currentCollection = null
     #currentCardIndex = 0
+    #userProfile = null
 
-    #mainContent
     #collectionsList
     #welcomeScreen
     #flashcardView
     #logoutButton
+    #userNameElement
+    #userEmailElement
+    #userAvatarElement
+    #loadingMessage
+    #errorMessage
 
     /**
      * Creates an instance of the custom element and attaches a shadow DOM.
@@ -125,7 +38,7 @@ customElements.define(
      * @returns {string[]} The list of attributes to be observed.
      */
     static get observedAttributes() {
-      return []
+      return ["user-data"]
     }
 
     /**
@@ -135,7 +48,27 @@ customElements.define(
      * @param {string} oldValue The old value of the attribute.
      * @param {string} newValue The new value of the attribute.
      */
-    attributeChangedCallback(name, oldValue, newValue) {}
+    attributeChangedCallback(name, oldValue, newValue) {
+      if (name === "user-data" && newValue) {
+        try {
+          this.userProfile = JSON.parse(newValue)
+          this.#updateUserProfile()
+        } catch (e) {
+          //:TODO: Add logger
+        }
+      }
+    }
+
+    /**
+     * Setter for user profile data
+     */
+    set userProfile(data) {
+      this.#userProfile = data
+      if (this.isConnected) {
+        this.#updateUserProfile()
+        this.#fetchUserCollection()
+      }
+    }
 
     /**
      * Called when the element is connected to the DOM.
@@ -153,24 +86,85 @@ customElements.define(
       )
       this.#logoutButton = this.shadowRoot.querySelector(".memora-logout-btn")
 
+      this.#userNameElement = this.shadowRoot.querySelector(".memora-user-name")
+
+      this.#userEmailElement =
+        this.shadowRoot.querySelector(".memora-user-email")
+
+      this.#userAvatarElement = this.shadowRoot.querySelector(".memora-avatar")
+
+      this.#loadingMessage = this.shadowRoot.querySelector(
+        ".memora-loading-message"
+      )
+      this.#errorMessage = this.shadowRoot.querySelector(
+        ".memora-error-message"
+      )
+
       // Set up event listeners
       this.#setupEventListeners()
 
-      // Add method to update collections (could be called from outside)
-      this.updateCollections = (newCollections) => {
-        this.#collections = newCollections
-        this.#renderCollections()
+      // Update user profile if data is available
+      if (this.#userProfile) {
+        this.#updateUserProfile()
+      }
 
-        // If current collection is no longer in the list, reset to welcome screen
-        if (this.#currentCollection) {
-          const stillExists = this.#collections.some(
-            (c) => c.id === this.#currentCollection.id
-          )
-          if (!stillExists) {
-            this.#currentCollection = null
-            this.#showWelcomeScreen()
-          }
-        }
+      // Show welcome screen initially
+      this.#showWelcomeScreen()
+    }
+
+    /**
+     * Updates the user profile display with the current user data
+     */
+    #updateUserProfile() {
+      if (!this.#userProfile) return
+
+      // Update user name and email
+      if (this.#userNameElement && this.#userProfile.displayName) {
+        this.#userNameElement.textContent = this.#userProfile.displayName
+      }
+
+      if (this.#userEmailElement && this.#userProfile.email) {
+        this.#userEmailElement.textContent = this.#userProfile.email
+      }
+
+      // Generate and update avatar initials
+      if (this.#userAvatarElement) {
+        const initials = this.#generateInitials(
+          this.#userProfile.displayName || this.#userProfile.email || ""
+        )
+        this.#userAvatarElement.textContent = initials
+      }
+    }
+
+    /**
+     * Generates initials from a user's name
+     * Handles cases with multiple names
+     *
+     * @param {string} name The user's name
+     * @returns {string} The user's initials (up to 2 characters)
+     */
+    #generateInitials(name) {
+      // If no name is provided, return a default
+      if (!name || name.trim() === "") return "?"
+
+      // For email addresses, use the first character
+      if (name.includes("@")) {
+        return name.charAt(0).toUpperCase()
+      }
+
+      // Split the name into parts
+      const nameParts = name.trim().split(/\s+/)
+
+      if (nameParts.length === 1) {
+        // Just one name, return first character
+        return nameParts[0].charAt(0).toUpperCase()
+      } else {
+        // Multiple names, return first and last initials
+        const firstInitial = nameParts[0].charAt(0).toUpperCase()
+        const lastInitial = nameParts[nameParts.length - 1]
+          .charAt(0)
+          .toUpperCase()
+        return `${firstInitial}${lastInitial}`
       }
     }
 
@@ -376,6 +370,63 @@ customElements.define(
 
       // Reset current collection
       this.#currentCollection = null
+    }
+
+    // Calling the back-end
+    async #fetchUserCollection() {
+      try {
+        // Clear previous errors
+        this.#errorMessage.style.display = "none"
+
+        // Show loading message
+        this.#loadingMessage.style.display = "block"
+
+        // Clear existing collection items (but keep the messages)
+        const collectionItems = this.shadowRoot.querySelectorAll(
+          ".memora-collection-item"
+        )
+        collectionItems.forEach((item) => item.remove())
+
+        const token = this.#userProfile?.token || null
+
+        if (!token) {
+          this.#errorMessage.textContent =
+            "Unable to authenticate. Please try logging out and back in."
+          this.#errorMessage.style.display = "block"
+          this.#loadingMessage.style.display = "none"
+          return
+        }
+
+        const response = await fetch("http://localhost:8086/collections", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-type": "application/json",
+          },
+        })
+
+        if (!response.ok) {
+          throw new Error("API error: " + response.status)
+        }
+
+        const collections = await response.json()
+        this.#updateCollections(collections)
+
+        // Hide loading message when done
+        this.#loadingMessage.style.display = "none"
+      } catch (error) {
+        //:TODO: Add logger
+
+        // Show error message
+        this.#loadingMessage.style.display = "none"
+        this.#errorMessage.textContent = `Error loading collections. Most probably a server is down.`
+        this.#errorMessage.style.display = "block"
+      }
+    }
+
+    #updateCollections(collections) {
+      this.#collections = collections
+      this.#renderCollections()
     }
 
     /**
