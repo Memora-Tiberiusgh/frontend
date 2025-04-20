@@ -36,6 +36,7 @@ customElements.define(
         this.#container.appendChild(loginComponent)
       }
     }
+
     /**
      * Called when the element is connected to the DOM.
      */
@@ -55,6 +56,15 @@ customElements.define(
           if (user) {
             // User is logged in, create and append main page component
             const mainPageComponent = document.createElement("memora-main")
+            // Store reference to the component
+            this.mainComponent = mainPageComponent
+
+            // Add event listener for logout directly on the component
+            this.mainComponent.addEventListener(
+              "memora-logout",
+              this.#handleLogout.bind(this)
+            )
+
             this.#container.appendChild(mainPageComponent)
           } else {
             // User is logged out, create and append login component
@@ -66,12 +76,46 @@ customElements.define(
     }
 
     /**
+     * Handles the logout event
+     * @private
+     */
+    #handleLogout() {
+      auth
+        .signOut()
+        .then(() => {
+          console.log("User logged out successfully")
+          // Auth state listener will automatically handle showing the login component
+        })
+        .catch((error) => {
+          console.error("Error logging out:", error)
+        })
+
+      // Remove the event listener when logout is triggered
+      if (this.mainComponent) {
+        this.mainComponent.removeEventListener(
+          "memora-logout",
+          this.#handleLogout
+        )
+        this.mainComponent = null
+      }
+    }
+
+    /**
      * Called when the element is disconnected from the DOM.
      */
     disconnectedCallback() {
       // Clean up the auth listener when the component is removed
       if (this.unsubscribe) {
         this.unsubscribe()
+      }
+
+      // Clean up the component-specific event listener
+      if (this.mainComponent) {
+        this.mainComponent.removeEventListener(
+          "memora-logout",
+          this.#handleLogout
+        )
+        this.mainComponent = null
       }
     }
   }
