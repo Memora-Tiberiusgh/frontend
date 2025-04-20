@@ -107,6 +107,7 @@ customElements.define(
     #collectionsList
     #welcomeScreen
     #flashcardView
+    #logoutButton
 
     /**
      * Creates an instance of the custom element and attaches a shadow DOM.
@@ -150,6 +151,7 @@ customElements.define(
       this.#collectionsList = this.shadowRoot.querySelector(
         ".memora-collections-list"
       )
+      this.#logoutButton = this.shadowRoot.querySelector(".memora-logout-btn")
 
       // Set up event listeners
       this.#setupEventListeners()
@@ -218,6 +220,13 @@ customElements.define(
 
       if (nextButton) {
         nextButton.addEventListener("click", () => this.#navigateCards(1))
+      }
+
+      if (this.#logoutButton) {
+        this.#logoutButton.addEventListener("click", () => {
+          const logoutEvent = new CustomEvent("memora-logout", {})
+          this.dispatchEvent(logoutEvent)
+        })
       }
     }
 

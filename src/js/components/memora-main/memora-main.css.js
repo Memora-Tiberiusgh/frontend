@@ -24,6 +24,11 @@ cssTemplate.innerHTML = `
         padding: 0;
         box-sizing: border-box;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        -webkit-user-select: none; /* Safari */
+        -ms-user-select: none; /* IE/Edge */
+        user-select: none; /* Standard syntax */
+        -webkit-touch-callout: none; /* iOS Safari */
+        -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
     }
 
     /* Global styles */
@@ -322,6 +327,38 @@ cssTemplate.innerHTML = `
 
     .memora-social-icon:hover {
         color: var(--primary);
+    }
+
+    .memora-user-profile {
+        display: flex;
+        align-items: center;
+        padding: 15px 10px;
+        border-top: 1px solid var(--gray-light);
+    }
+
+    .memora-logout-btn {
+        margin-left: auto;
+        background-color: transparent;
+        border: none;
+        padding: 5px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: var(--gray);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .memora-logout-btn:hover {
+        color: var(--primary);
+        background-color: var(--gray-light);
+    }
+
+    .memora-logout-icon {
+        width: 16px;
+        height: 16px;
+        display: block;
     }
 
     /* Responsive styles */
