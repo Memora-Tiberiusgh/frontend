@@ -80,29 +80,6 @@ customElements.define(
       appleLoginBtn.addEventListener("click", () => {
         console.log("Apple login not implemented yet")
       })
-
-      // Listen for auth state changes
-      this.unsubscribe = auth.onAuthStateChanged((user) => {
-        if (user) {
-          // User is signed in
-          this.dispatchEvent(
-            new CustomEvent("auth-changed", {
-              bubbles: true,
-              composed: true,
-              detail: { user },
-            })
-          )
-        } else {
-          // User is signed out
-          this.dispatchEvent(
-            new CustomEvent("auth-changed", {
-              bubbles: true,
-              composed: true,
-              detail: { user: null },
-            })
-          )
-        }
-      })
     }
 
     /**
