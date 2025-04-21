@@ -1,6 +1,6 @@
 import { htmlTemplate } from "./memora-app.html.js"
 import { cssTemplate } from "./memora-app.css.js"
-import { app, auth } from "../../services/firebase.js"
+import { auth } from "../../services/firebase.js"
 
 customElements.define(
   "memora-app",
@@ -9,6 +9,7 @@ customElements.define(
    */
   class extends HTMLElement {
     #container
+    #userCreateURL = "http://localhost:8086/api/v1/users"
 
     /**
      * Creates an instance of the custom element and attaches a shadow DOM.
@@ -47,18 +48,17 @@ customElements.define(
       // Only set up auth listener for main app routes, not for special pages
       if (path !== "/terms.html" && path !== "/privacy.html") {
         // Set up auth state listener for normal app flow
-        this.unsubscribe = auth.onAuthStateChanged((user) => {
-          // Clear the container
-          while (this.#container.firstChild) {
-            this.#container.removeChild(this.#container.firstChild)
-          }
+        this.unsubscribe = auth.onAuthStateChanged(async (user) => {
+          try {
+            // Clear the container
+            while (this.#container.firstChild) {
+              this.#container.removeChild(this.#container.firstChild)
+            }
 
-          if (user) {
-            // User is logged in, create and append main page component
-            const mainPageComponent = document.createElement("memora-main")
+            if (user) {
+              // Get token in a separate try block to isolate token issues
+              const token = await user.getIdToken()
 
-            // Get the token and add it to user profile
-            user.getIdToken().then((token) => {
               const userProfile = {
                 uid: user.uid,
                 displayName: user.displayName,
@@ -67,29 +67,71 @@ customElements.define(
                 token: token,
               }
 
-              // Set the user profile data
-              mainPageComponent.userProfile = userProfile
-            })
+              // Isolate the fetch in its own try block
+              let response
+              try {
+                response = await fetch(this.#userCreateURL, {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    uid: user.uid,
+                    displayName: user.displayName,
+                    email: user.email,
+                  }),
+                })
+              } catch (fetchError) {
+                // console.error("Fetch error:", fetchError)
+              }
 
-            // Store reference to the component
-            this.mainComponent = mainPageComponent
+              // Process response in its own try block
+              let userData
+              try {
+                if (!response.ok) {
+                  throw new Error(
+                    `Failed to create user in backend: ${response.status}`
+                  )
+                }
+                userData = await response.json()
+              } catch (responseError) {
+                // console.error("Response processing error:", responseError)
+              }
 
-            // Add event listener for logout directly on the component
-            this.mainComponent.addEventListener(
-              "memora-logout",
-              this.#handleLogout.bind(this)
-            )
+              // Create component in its own try block
+              try {
+                const mainPageComponent = document.createElement("memora-main")
 
-            this.#container.appendChild(mainPageComponent)
-          } else {
-            // User is logged out, create and append login component
-            const loginComponent = document.createElement("memora-login")
-            this.#container.appendChild(loginComponent)
+                mainPageComponent.userProfile = userProfile
+
+                this.mainComponent = mainPageComponent
+                this.mainComponent.addEventListener(
+                  "memora-logout",
+                  this.#handleLogout.bind(this)
+                )
+
+                this.#container.appendChild(mainPageComponent)
+              } catch (componentError) {
+                // console.error("Component error:", componentError)
+              }
+            } else {
+              const loginComponent = document.createElement("memora-login")
+              this.#container.appendChild(loginComponent)
+            }
+          } catch (error) {
+            // console.error("Error in authentication flow:", error)
+            // console.error("Error details:", error.message, error.stack)
+
+            // Fallback UI
+            const errorElement = document.createElement("div")
+            errorElement.textContent =
+              "An error occurred. Please pray for a solution."
+            this.#container.appendChild(errorElement)
           }
         })
       }
     }
-
     /**
      * Handles the logout event
      * @private
