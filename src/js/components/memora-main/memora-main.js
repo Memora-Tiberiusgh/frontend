@@ -528,7 +528,40 @@ customElements.define(
 
         // Set up event listeners for the component
         collectionCreator.addEventListener("collection-created", (event) => {
-          this.#handleCollectionCreated(event.detail)
+          // Get the collection data from the event
+          const newCollection = event.detail
+
+          // Add to collections array
+          this.#collections.push(event.detail)
+
+          // Update UI
+          this.#renderCollections()
+
+          // Set as current collection
+          this.#currentCollection = newCollection
+
+          // Update active state
+          this.#updateCollectionActiveState(newCollection)
+
+          const activeItem = this.shadowRoot.querySelector(
+            ".memora-collection-item.active"
+          )
+          if (activeItem) {
+            activeItem.scrollIntoView({ behavior: "smooth", block: "nearest" })
+          }
+        })
+
+        collectionCreator.addEventListener("collection-done", () => {
+          // Hide the creator
+          this.#clearMainContent()
+          this.#isCreatingCollection = false
+
+          // Show the review component for the current collection
+          if (this.#currentCollection) {
+            this.#showReviewComponent(this.#currentCollection.id)
+          } else {
+            this.#showWelcomeScreen()
+          }
         })
 
         collectionCreator.addEventListener("collection-cancelled", () => {
