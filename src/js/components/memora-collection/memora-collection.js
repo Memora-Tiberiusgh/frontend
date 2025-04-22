@@ -25,6 +25,7 @@ customElements.define(
     #noCardsMessage
     #cardCount
     #descriptionInput
+    #collectionNameDisplay
 
     /**
      * Creates an instance of MemoraCollection and attaches shadow DOM
@@ -97,6 +98,10 @@ customElements.define(
 
       const cancelBtn = this.shadowRoot.querySelector(".memora-button-cancel")
       cancelBtn.addEventListener("click", () => this.#cancel())
+
+      this.#collectionNameDisplay = this.shadowRoot.querySelector(
+        ".memora-collection-name-display"
+      )
 
       // Allow Enter key to submit collection name
       this.#collectionNameInput.addEventListener("keydown", (event) => {
@@ -178,6 +183,11 @@ customElements.define(
           // Store collection data for this component
           this.#collectionId = collection.id
           this.#collectionName = collectionName
+
+          // Update the collection name display for the flashcard step
+          if (this.#collectionNameDisplay) {
+            this.#collectionNameDisplay.textContent = collection.name
+          }
 
           // Dispatch event with the collection data
           this.dispatchEvent(
