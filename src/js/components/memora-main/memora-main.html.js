@@ -5,7 +5,7 @@
 // Define the HTML template.
 export const htmlTemplate = document.createElement("template")
 htmlTemplate.innerHTML = `
-    <div class="memora-app">
+        <div class="memora-app">
         <!-- Sidebar -->
         <div class="memora-sidebar">
             <div class="memora-header">
@@ -63,44 +63,21 @@ htmlTemplate.innerHTML = `
                 <p style="font-size: 1.1rem; color: var(--gray);">Choose a collection from the menu to get started</p>
             </div>
 
-            <!-- Flashcard view (initially hidden) -->
-            <div class="memora-flashcard-view" style="display: none;">
-                <div class="memora-collection-header">
-                    <h1 class="memora-collection-name"></h1>
-                    <div class="memora-collection-meta"></div>
-                </div>
-
-                <div class="memora-flashcard-container">
-                    <div class="memora-flashcard">
-                        <div class="memora-flashcard-header">
-                            Flashcard
-                        </div>
-                        <div class="memora-flashcard-body">
-                            <div class="memora-flashcard-question"></div>
-                            <hr style="margin: 25px 0; border: 0; height: 1px; background-color: var(--gray-light);">
-                            <div class="memora-flashcard-answer"></div>
-                        </div>
-                        <div class="memora-flashcard-footer">
-                            <button class="memora-navigation-button prev">Previous Card</button>
-                            <button class="memora-navigation-button next">Next Card</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <!-- Flashcard component will be dynamically inserted here -->
         </div>
     </div>
 
     <!-- Hidden templates -->
-<template id="memora-settings-icon-template">
-  <span class="memora-settings-icon">
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="3"></circle>
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-    </svg>
-  </span>
-</template>
+    <template id="memora-settings-icon-template">
+      <span class="memora-settings-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+      </span>
+    </template>
 
-<template id="memora-public-badge-template">
-  <span class="memora-public-badge">Public</span>
-</template>
+    <template id="memora-public-badge-template">
+      <span class="memora-public-badge">Public</span>
+    </template>
 `

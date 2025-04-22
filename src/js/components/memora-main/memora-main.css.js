@@ -59,8 +59,7 @@ cssTemplate.innerHTML = `
     }
 
     .memora-user-profile,
-    .memora-collections-title,
-    .memora-collection-header {
+    .memora-collections-title {
         cursor: default;
     }
 
@@ -69,6 +68,7 @@ cssTemplate.innerHTML = `
         font-weight: bold;
         color: var(--primary);
         margin-bottom: 30px;
+        cursor: default;
     }
 
     .memora-collections-title {
@@ -163,100 +163,8 @@ cssTemplate.innerHTML = `
         user-select: none;
     }
 
-    .memora-collection-header {
-        text-align: center;
-        margin-bottom: 40px;
-        user-select: none;
-        cursor: default;
-    }
-
-    .memora-flashcard-header,
-    .memora-logo,
-    .memora-flashcard-body,
     .memora-welcome-screen {
         cursor: default;
-    }
-
-    .memora-collection-name {
-        font-size: 2rem;
-        font-weight: bold;
-        margin-bottom: 10px;
-    }
-
-    .memora-collection-meta {
-        font-size: 1rem;
-        color: var(--gray);
-    }
-
-    .memora-flashcard-container {
-        width: 100%;
-        max-width: 600px;
-    }
-
-    .memora-flashcard {
-        background-color: white;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
-        margin-bottom: 30px;
-    }
-
-    .memora-flashcard-header {
-        padding: 20px;
-        background-color: var(--primary);
-        color: white;
-        text-align: center;
-        font-weight: 600;
-    }
-
-    .memora-flashcard-body {
-        padding: 30px;
-    }
-
-    .memora-flashcard-question {
-        font-size: 1.4rem;
-        text-align: center;
-        margin-bottom: 40px;
-        font-weight: 500;
-    }
-
-    .memora-flashcard-answer {
-        text-align: center;
-        font-size: 1.2rem;
-        font-weight: 500;
-        color: var(--primary-dark);
-    }
-
-    .memora-flashcard-footer {
-        padding: 20px;
-        display: flex;
-        justify-content: space-between;
-        border-top: 1px solid var(--gray-light);
-    }
-
-    .memora-navigation-button {
-        padding: 10px 20px;
-        border-radius: 8px;
-        background-color: var(--primary);
-        color: white;
-        font-weight: 500;
-        border: none;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .memora-navigation-button:hover {
-        background-color: var(--primary-dark);
-    }
-
-    .memora-navigation-button.prev {
-        background-color: var(--gray-light);
-        color: var(--text-dark);
-    }
-
-    .memora-navigation-button.prev:hover {
-        background-color: var(--gray);
-        color: white;
     }
 
     .memora-add-collection-btn {
@@ -372,50 +280,48 @@ cssTemplate.innerHTML = `
     }
 
     .memora-collection-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
 
-.memora-collection-name-text {
-    flex: 1;
-}
+    .memora-collection-name-text {
+        flex: 1;
+    }
 
-.memora-settings-icon {
-    color: var(--gray);
-    cursor: pointer;
-    opacity: 0.7;
-    transition: all 0.2s ease;
-    margin-left: 8px;
-    display: none;
-}
+    .memora-settings-icon {
+        color: var(--gray);
+        cursor: pointer;
+        opacity: 0.7;
+        transition: all 0.2s ease;
+        margin-left: 8px;
+        display: none;
+    }
 
-.memora-collection-item:hover .memora-settings-icon {
-    display: block;
-}
+    .memora-collection-item:hover .memora-settings-icon {
+        display: block;
+    }
 
-.memora-settings-icon:hover {
-    color: var(--primary);
-    opacity: 1;
-    transform: rotate(45deg);
-}
+    .memora-settings-icon:hover {
+        color: var(--primary);
+        opacity: 1;
+        transform: rotate(45deg);
+    }
 
-.memora-collection-item.active .memora-settings-icon {
-    color: white;
-    opacity: 1;
-}
+    .memora-collection-item.active .memora-settings-icon {
+        color: white;
+        opacity: 1;
+    }
 
-/* Make sure the icon still displays on hover when active */
-.memora-collection-item.active:hover .memora-settings-icon {
-    display: block;
-}
+    /* Make sure the icon still displays on hover when active */
+    .memora-collection-item.active:hover .memora-settings-icon {
+        display: block;
+    }
 
-/* Style for hover effect that works with both active and inactive */
-.memora-collection-item .memora-settings-icon:hover {
-    transform: rotate(45deg);
-}
-
-
+    /* Style for hover effect that works with both active and inactive */
+    .memora-collection-item .memora-settings-icon:hover {
+        transform: rotate(45deg);
+    }
 
     /* Responsive styles */
     @media (max-width: 992px) {
