@@ -222,8 +222,16 @@ customElements.define(
               // Update the current collection
               this.#currentCollection = collection
 
-              // Update the UI to show the collection as active
-              this.#updateCollectionActiveState(collection)
+              // Remove "active" class from all collection items
+              const collectionItems = this.shadowRoot.querySelectorAll(
+                ".memora-collection-item"
+              )
+              collectionItems.forEach((item) => {
+                item.classList.remove("active")
+              })
+
+              // Add active class only to the clicked collection
+              collectionItem.classList.add("active")
 
               // Show the settings for this collection, but don't fetch cards
               this.#showCollectionSettings(collection)
@@ -597,26 +605,6 @@ customElements.define(
       // Abort all event listeners at once
       if (this.#abortController) {
         this.#abortController.abort()
-        this.#abortController = null
-
-        // Clear any references to DOM elements
-        this.#collectionsList = null
-        this.#welcomeScreen = null
-        this.#mainContent = null
-        this.#logoutButton = null
-        this.#userNameElement = null
-        this.#userEmailElement = null
-        this.#userAvatarElement = null
-        this.#loadingMessage = null
-        this.#errorMessage = null
-        this.#settingsIconTemplate = null
-        this.#publicBadgeTemplate = null
-        this.#addCollectionButton = null
-
-        // Clear data
-        this.#collections = []
-        this.#currentCollection = null
-        this.#userProfile = null
       }
     }
   }
