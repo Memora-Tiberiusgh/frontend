@@ -9,13 +9,13 @@ customElements.define(
   class extends HTMLElement {
     #collections = []
     #currentCollection = null
-    #currentCardIndex = 0
     #userProfile = null
     #isCreatingCollection = false
+    #abortController = null
 
     #collectionsList
     #welcomeScreen
-    #flashcardView
+    #mainContent
     #logoutButton
     #userNameElement
     #userEmailElement
@@ -24,6 +24,7 @@ customElements.define(
     #errorMessage
     #settingsIconTemplate
     #publicBadgeTemplate
+    #addCollectionButton
 
     #collectionURL = "http://localhost:8086/api/v1/collection"
 
@@ -35,6 +36,8 @@ customElements.define(
       this.attachShadow({ mode: "open" })
       this.shadowRoot.appendChild(htmlTemplate.content.cloneNode(true))
       this.shadowRoot.appendChild(cssTemplate.content.cloneNode(true))
+
+      this.#abortController = new AbortController()
     }
 
     /**
@@ -54,10 +57,9 @@ customElements.define(
      * @param {string} newValue The new value of the attribute.
      */
     attributeChangedCallback(name, oldValue, newValue) {
-      if (name === "user-data" && newValue) {
+      if (newValue !== oldValue && name === "user-data") {
         try {
           this.userProfile = JSON.parse(newValue)
-          this.#updateUserProfile()
         } catch (e) {
           //:TODO: Add logger
         }
@@ -83,9 +85,8 @@ customElements.define(
       this.#welcomeScreen = this.shadowRoot.querySelector(
         ".memora-welcome-screen"
       )
-      this.#flashcardView = this.shadowRoot.querySelector(
-        ".memora-flashcard-view"
-      )
+      this.#mainContent = this.shadowRoot.querySelector(".memora-main-content")
+
       this.#collectionsList = this.shadowRoot.querySelector(
         ".memora-collections-list"
       )
@@ -109,6 +110,10 @@ customElements.define(
       )
       this.#publicBadgeTemplate = this.shadowRoot.querySelector(
         "#memora-public-badge-template"
+      )
+
+      this.#addCollectionButton = this.shadowRoot.querySelector(
+        ".memora-add-collection-btn"
       )
 
       // Set up event listeners
@@ -159,7 +164,7 @@ customElements.define(
      */
     #generateInitials(name) {
       // If no name is provided, return a default
-      if (!name || name.trim() === "") return "?"
+      if (!name || name.trim() === "") return "Ghost"
 
       // For email addresses, use the first character
       if (name.includes("@")) {
@@ -186,87 +191,85 @@ customElements.define(
      * Sets up all event listeners for the component
      */
     #setupEventListeners() {
+      // Get the signal from the abort controller
+      const signal = this.#abortController.signal
+
       // Add delegated event listener for collection items
-      this.#collectionsList.addEventListener("click", (event) => {
-        // Check if the settings icon was clicked
-        const settingsIcon = event.target.closest(".memora-settings-icon")
-        if (settingsIcon) {
-          // Stop the event from triggering collection selection
-          event.stopPropagation()
+      this.#collectionsList.addEventListener(
+        "click",
+        (event) => {
+          // Check if the settings icon was clicked
+          const settingsIcon = event.target.closest(".memora-settings-icon")
+          if (settingsIcon) {
+            // Stop the event from triggering collection selection
+            event.stopPropagation()
 
-          // Find the collection item and collection data
-          const collectionItem = settingsIcon.closest(".memora-collection-item")
-          const nameElement = collectionItem.querySelector(
-            ".memora-collection-name-text"
-          )
-          const collectionName = nameElement.textContent.trim()
+            // Find the collection item and collection data
+            const collectionItem = settingsIcon.closest(
+              ".memora-collection-item"
+            )
+            const nameElement = collectionItem.querySelector(
+              ".memora-collection-name-text"
+            )
+            const collectionName = nameElement.textContent.trim()
 
-          // Find the collection in the data
-          const collection = this.#collections.find(
-            (c) => c.name === collectionName
-          )
+            // Find the collection in the data
+            const collection = this.#collections.find(
+              (c) => c.name === collectionName
+            )
 
-          if (collection) {
-            // Update the current collection
-            this.#currentCollection = collection
+            if (collection) {
+              // Update the current collection
+              this.#currentCollection = collection
 
-            // Update the UI to show the collection as active
-            this.#updateCollectionActiveState(collection)
+              // Update the UI to show the collection as active
+              this.#updateCollectionActiveState(collection)
 
-            // Show the settings for this collection, but don't fetch cards
-            this.#showCollectionSettings(collection)
+              // Show the settings for this collection, but don't fetch cards
+              this.#showCollectionSettings(collection)
+            }
+
+            return
           }
 
-          return
-        }
+          const collectionItem = event.target.closest(".memora-collection-item")
+          if (collectionItem) {
+            const collectionName = collectionItem.textContent.trim()
+            // Handle public badge text
+            const collection = this.#collections.find(
+              (c) =>
+                c.name === collectionName ||
+                (collectionName.includes(c.name) && c.isPublic)
+            )
 
-        const collectionItem = event.target.closest(".memora-collection-item")
-        if (collectionItem) {
-          const collectionName = collectionItem.textContent.trim()
-          // Handle public badge text
-          const collection = this.#collections.find(
-            (c) =>
-              c.name === collectionName ||
-              (collectionName.includes(c.name) && c.isPublic)
-          )
-
-          if (collection) {
-            this.#selectCollection(collection)
+            if (collection) {
+              this.#selectCollection(collection)
+            }
           }
-        }
-      })
+        },
+        { signal }
+      )
 
       // Add collection button event listener
-      const addButton = this.shadowRoot.querySelector(
-        ".memora-add-collection-btn"
-      )
-      if (addButton) {
-        addButton.addEventListener("click", () => {
-          this.#showCollectionCreator()
-        })
-      }
-
-      // Add event listeners for navigation buttons
-      const prevButton = this.shadowRoot.querySelector(
-        ".memora-navigation-button.prev"
-      )
-      const nextButton = this.shadowRoot.querySelector(
-        ".memora-navigation-button.next"
-      )
-
-      if (prevButton) {
-        prevButton.addEventListener("click", () => this.#navigateCards(-1))
-      }
-
-      if (nextButton) {
-        nextButton.addEventListener("click", () => this.#navigateCards(1))
+      if (this.#addCollectionButton) {
+        this.#addCollectionButton.addEventListener(
+          "click",
+          () => {
+            this.#showCollectionCreator()
+          },
+          { signal }
+        )
       }
 
       if (this.#logoutButton) {
-        this.#logoutButton.addEventListener("click", () => {
-          const logoutEvent = new CustomEvent("memora-logout", {})
-          this.dispatchEvent(logoutEvent)
-        })
+        this.#logoutButton.addEventListener(
+          "click",
+          () => {
+            const logoutEvent = new CustomEvent("memora-logout", {})
+            this.dispatchEvent(logoutEvent)
+          },
+          { signal }
+        )
       }
     }
 
@@ -332,133 +335,88 @@ customElements.define(
     }
 
     /**
-     * Selects a collection and displays its flashcards
+     * Selects a collection and displays its reviews
      */
     #selectCollection(collection) {
       // Update the current collection
       this.#currentCollection = collection
-      this.#currentCardIndex = 0
 
       // Update collection items to show active state
       this.#updateCollectionActiveState(collection)
 
-      // Update and show flashcard view
-      this.#fetchCollectionCards(collection.id)
+      // Update and show review view
+      this.#showReviewComponent(collection.id)
     }
 
+    /**
+     * Shows the collection settings component
+     */
     #showCollectionSettings(collection) {
-      // Hide the welcome screen and flashcard view
+      // Hide the welcome screen and review view
       this.#welcomeScreen.style.display = "none"
-      this.#flashcardView.style.display = "none"
+
+      // Remove any existing components from main content
+      this.#clearMainContent()
 
       console.log("Now i should render the settings webcomponent")
     }
 
     /**
-     * Fetches cards for a specific collection
+     * Create and display the review component
+     *
+     * @param {string|number} collectionId - The ID of the collection to display
      */
-    async #fetchCollectionCards(collectionId) {
+    async #showReviewComponent(collectionId) {
+      // Hide the welcome screen
+      this.#welcomeScreen.style.display = "none"
+
+      // Clear the main content
+      this.#clearMainContent()
+
       try {
-        // Show loading message
-        this.#loadingMessage.style.display = "block"
+        // Dynamically import the review component
+        await import("../memora-review")
 
-        const token = this.#userProfile?.token || null
+        // Create the review component
+        const reviewComponent = document.createElement("memora-review")
 
-        const response = await fetch(this.#collectionURL, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-type": "application/json",
-          },
-        })
+        // Pass the collection ID and auth token
+        reviewComponent.setAttribute("collection-id", collectionId)
 
-        if (!response.ok) {
-          throw new Error("API error: " + response.status)
+        if (this.#userProfile && this.#userProfile.token) {
+          reviewComponent.setAttribute("token", this.#userProfile.token)
         }
 
-        const data = await response.json()
+        // Pass the collection name for display purposes
+        if (this.#currentCollection) {
+          reviewComponent.setAttribute(
+            "collection-name",
+            this.#currentCollection.name
+          )
+        }
 
-        // Update the current collection with the fetched cards
-        this.#currentCollection.cards = data.cards || []
-
-        // Hide loading message
-        this.#loadingMessage.style.display = "none"
-
-        // Update and show flashcard view
-        this.#updateFlashcardView()
+        // Append to main content
+        this.#mainContent.appendChild(reviewComponent)
       } catch (error) {
-        // Show error message
-        this.#loadingMessage.style.display = "none"
-        this.#errorMessage.textContent = `Error loading flashcards. Please try again.`
+        console.error("Error loading review component:", error)
+        this.#errorMessage.textContent = `Error loading review component. Please try again.`
         this.#errorMessage.style.display = "block"
       }
     }
 
     /**
-     * Updates the flashcard view with the current collection and card
+     * Clears all dynamic components from the main content area
      */
-    #updateFlashcardView() {
-      if (!this.#currentCollection) return
-
-      // Update collection header
-      const collectionName = this.#flashcardView.querySelector(
-        ".memora-collection-name"
+    #clearMainContent() {
+      // Find and remove all custom elements in the main content
+      const customElements = this.#mainContent.querySelectorAll(
+        ":not(.memora-welcome-screen)"
       )
-      collectionName.textContent = this.#currentCollection.name
-
-      const collectionMeta = this.#flashcardView.querySelector(
-        ".memora-collection-meta"
-      )
-      collectionMeta.textContent = `Card ${this.#currentCardIndex + 1} of ${
-        this.#currentCollection.cards.length
-      }`
-
-      // Update flashcard content
-      const flashcardQuestion = this.#flashcardView.querySelector(
-        ".memora-flashcard-question"
-      )
-      const flashcardAnswer = this.#flashcardView.querySelector(
-        ".memora-flashcard-answer"
-      )
-
-      if (this.#currentCollection.cards.length > 0) {
-        const currentCard =
-          this.#currentCollection.cards[this.#currentCardIndex]
-        flashcardQuestion.textContent = currentCard.question
-        flashcardAnswer.textContent = currentCard.answer
-
-        // Update navigation buttons
-        const prevButton = this.#flashcardView.querySelector(
-          ".memora-navigation-button.prev"
-        )
-        const nextButton = this.#flashcardView.querySelector(
-          ".memora-navigation-button.next"
-        )
-
-        prevButton.disabled = this.#currentCardIndex === 0
-        nextButton.disabled =
-          this.#currentCardIndex === this.#currentCollection.cards.length - 1
-      }
-
-      // Show flashcard view, hide welcome screen
-      this.#welcomeScreen.style.display = "none"
-      this.#flashcardView.style.display = "block"
-    }
-
-    /**
-     * Navigates between cards
-     */
-    #navigateCards(direction) {
-      if (!this.#currentCollection) return
-
-      // Calculate new index
-      const newIndex = this.#currentCardIndex + direction
-
-      // Check if within bounds
-      if (newIndex >= 0 && newIndex < this.#currentCollection.cards.length) {
-        this.#currentCardIndex = newIndex
-        this.#updateFlashcardView()
-      }
+      customElements.forEach((element) => {
+        if (element.nodeName.includes("-")) {
+          element.remove()
+        }
+      })
     }
 
     /**
@@ -467,9 +425,11 @@ customElements.define(
     #showWelcomeScreen() {
       if (this.#isCreatingCollection) return
 
-      // Show welcome screen, hide flashcard view
+      // Show welcome screen, hide review view
       this.#welcomeScreen.style.display = "block"
-      this.#flashcardView.style.display = "none"
+
+      // Clear the main content of any other components
+      this.#clearMainContent()
 
       // Clear active class from all collection items
       const collectionItems = this.shadowRoot.querySelectorAll(
@@ -539,7 +499,9 @@ customElements.define(
     async #showCollectionCreator() {
       // Hide other views
       this.#welcomeScreen.style.display = "none"
-      this.#flashcardView.style.display = "none"
+
+      // Clear the main content
+      this.#clearMainContent()
 
       // Show loading indicator if desired
       // You could add a simple loading spinner here
@@ -547,13 +509,6 @@ customElements.define(
       try {
         // Dynamically import the collection component
         await import("../memora-collection")
-
-        // Clear any existing creator component
-        const existingCreator =
-          this.shadowRoot.querySelector("memora-collection")
-        if (existingCreator) {
-          existingCreator.remove()
-        }
 
         // Create and append the collection creator component
         const collectionCreator = document.createElement("memora-collection")
@@ -573,10 +528,7 @@ customElements.define(
         })
 
         // Append to main content
-        const mainContent = this.shadowRoot.querySelector(
-          ".memora-main-content"
-        )
-        mainContent.appendChild(collectionCreator)
+        this.#mainContent.appendChild(collectionCreator)
 
         this.#isCreatingCollection = true
       } catch (error) {
@@ -594,19 +546,14 @@ customElements.define(
      * Hides the collection creator and returns to the welcome screen
      */
     #hideCollectionCreator() {
-      const collectionCreator =
-        this.shadowRoot.querySelector("memora-collection")
-      if (collectionCreator) {
-        collectionCreator.remove()
-      }
-
+      this.#clearMainContent()
       this.#isCreatingCollection = false
 
       // Show the welcome screen if no collection is selected
       if (!this.#currentCollection) {
         this.#showWelcomeScreen()
       } else {
-        this.#updateFlashcardView()
+        this.#showReviewComponent(this.#currentCollection.id)
       }
     }
 
@@ -617,12 +564,7 @@ customElements.define(
      */
     #handleCollectionCreated(collectionData) {
       // Hide the collection creator
-      const collectionCreator =
-        this.shadowRoot.querySelector("memora-collection")
-      if (collectionCreator) {
-        collectionCreator.remove()
-      }
-
+      this.#clearMainContent()
       this.#isCreatingCollection = false
 
       // Create a new collection object
@@ -651,6 +593,31 @@ customElements.define(
     /**
      * Called when the element is disconnected from the DOM.
      */
-    disconnectedCallback() {}
+    disconnectedCallback() {
+      // Abort all event listeners at once
+      if (this.#abortController) {
+        this.#abortController.abort()
+        this.#abortController = null
+
+        // Clear any references to DOM elements
+        this.#collectionsList = null
+        this.#welcomeScreen = null
+        this.#mainContent = null
+        this.#logoutButton = null
+        this.#userNameElement = null
+        this.#userEmailElement = null
+        this.#userAvatarElement = null
+        this.#loadingMessage = null
+        this.#errorMessage = null
+        this.#settingsIconTemplate = null
+        this.#publicBadgeTemplate = null
+        this.#addCollectionButton = null
+
+        // Clear data
+        this.#collections = []
+        this.#currentCollection = null
+        this.#userProfile = null
+      }
+    }
   }
 )
