@@ -371,6 +371,52 @@ cssTemplate.innerHTML = `
         color: var(--error, #e53935);
     }
 
+    .memora-collection-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.memora-collection-name-text {
+    flex: 1;
+}
+
+.memora-settings-icon {
+    color: var(--gray);
+    cursor: pointer;
+    opacity: 0.7;
+    transition: all 0.2s ease;
+    margin-left: 8px;
+    display: none;
+}
+
+.memora-collection-item:hover .memora-settings-icon {
+    display: block;
+}
+
+.memora-settings-icon:hover {
+    color: var(--primary);
+    opacity: 1;
+    transform: rotate(45deg);
+}
+
+.memora-collection-item.active .memora-settings-icon {
+    color: white;
+    opacity: 1;
+}
+
+/* Make sure the icon still displays on hover when active */
+.memora-collection-item.active:hover .memora-settings-icon {
+    display: block;
+}
+
+/* Style for hover effect that works with both active and inactive */
+.memora-collection-item .memora-settings-icon:hover {
+    transform: rotate(45deg);
+}
+
+
+
     /* Responsive styles */
     @media (max-width: 992px) {
         .memora-app {
