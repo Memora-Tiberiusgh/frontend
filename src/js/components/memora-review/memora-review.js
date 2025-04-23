@@ -10,16 +10,19 @@ customElements.define(
     #collection = null
     #currentCardIndex = 0
     #abortController = null
+    #isAnswerRevealed = false
 
     #flashcardView
     #collectionName
     #collectionMeta
     #flashcardQuestion
     #flashcardAnswer
+    #answerContainer
     #prevButton
     #nextButton
+    #revealButton
 
-    #collectionURL = "http://localhost:8086/api/v1/collection"
+    #collectionURL = "http://localhost:8086/api/v1/flashcards/collection"
 
     /**
      * Creates an instance of the custom element and attaches a shadow DOM.
@@ -58,9 +61,7 @@ customElements.define(
             this.#fetchCollectionCards(newValue, token)
           }
         }
-
         if (name === "collection-name" && this.isConnected) {
-          // Update the collection name in the UI
           if (this.#collectionName) {
             this.#collectionName.textContent = newValue
           }
@@ -88,11 +89,17 @@ customElements.define(
       this.#flashcardAnswer = this.shadowRoot.querySelector(
         ".memora-flashcard-answer"
       )
+      this.#answerContainer = this.shadowRoot.querySelector(
+        ".memora-flashcard-answer-container"
+      )
       this.#prevButton = this.shadowRoot.querySelector(
         ".memora-navigation-button.prev"
       )
       this.#nextButton = this.shadowRoot.querySelector(
         ".memora-navigation-button.next"
+      )
+      this.#revealButton = this.shadowRoot.querySelector(
+        ".memora-reveal-button"
       )
 
       // Set up event listeners
@@ -133,10 +140,58 @@ customElements.define(
       }
 
       if (this.#nextButton) {
-        this.#nextButton.addEventListener("click", () =>
-          this.#navigateCards(1)
-        ),
+        this.#nextButton.addEventListener(
+          "click",
+          () => this.#navigateCards(1),
           { signal }
+        )
+      }
+
+      if (this.#revealButton) {
+        this.#revealButton.addEventListener(
+          "click",
+          () => this.#toggleAnswer(),
+          { signal }
+        )
+      }
+    }
+
+    /**
+     * Toggles the visibility of the answer
+     */
+    #toggleAnswer() {
+      if (!this.#flashcardAnswer || !this.#answerContainer) return
+
+      this.#isAnswerRevealed = !this.#isAnswerRevealed
+
+      if (this.#isAnswerRevealed) {
+        // Show answer container
+        this.#answerContainer.classList.add("revealed")
+        this.#revealButton.textContent = "Hide Answer"
+
+        // Show the answer text after a tiny delay to ensure it's hidden during transition
+        setTimeout(() => {
+          if (this.#flashcardAnswer) {
+            this.#flashcardAnswer.style.display = "block"
+
+            // Ensure long text is properly formatted
+            const answerText = this.#flashcardAnswer.textContent
+            if (answerText && answerText.length > 30) {
+              // Ensure text is properly wrapped
+              this.#flashcardAnswer.style.wordBreak = "break-word"
+              this.#flashcardAnswer.style.overflowWrap = "break-word"
+            }
+          }
+        }, 10)
+      } else {
+        // Hide answer container
+        this.#answerContainer.classList.remove("revealed")
+        this.#revealButton.textContent = "Reveal Answer"
+
+        // Hide the answer text immediately
+        if (this.#flashcardAnswer) {
+          this.#flashcardAnswer.style.display = "none"
+        }
       }
     }
 
@@ -144,29 +199,145 @@ customElements.define(
      * Updates the flashcard view with the current collection and card
      */
     #updateFlashcardView() {
-      if (!this.#collection) return
+      // Check if collection exists and has cards
+      if (!this.#collection || !this.#collection.cards?.length) {
+        this.#showEmptyState()
+        return
+      }
 
-      // Update collection header
-      this.#collectionName.textContent = this.#collection.name
-      this.#collectionMeta.textContent = `Card ${
-        this.#currentCardIndex + 1
-      } of ${this.#collection.cards.length}`
+      // Update collection title from attribute
+      const collectionName =
+        this.getAttribute("collection-name") || "Flashcards"
 
-      // Update flashcard content
-      if (this.#collection.cards.length > 0) {
-        const currentCard = this.#collection.cards[this.#currentCardIndex]
+      if (this.#collectionName) {
+        this.#collectionName.textContent = collectionName
+      }
+
+      // Update card count
+      if (this.#collectionMeta) {
+        this.#collectionMeta.textContent = `Card ${
+          this.#currentCardIndex + 1
+        } of ${this.#collection.cards.length}`
+      }
+
+      // Reset answer state
+      this.#isAnswerRevealed = false
+      if (this.#answerContainer) {
+        this.#answerContainer.classList.remove("revealed")
+      }
+
+      // Get current card
+      const currentCard = this.#collection.cards[this.#currentCardIndex]
+
+      // Immediately update question but delay answer update until after transition
+      if (this.#flashcardQuestion) {
         this.#flashcardQuestion.textContent = currentCard.question
-        this.#flashcardAnswer.textContent = currentCard.answer
+        // Ensure question text is properly formatted for long words
+        this.#flashcardQuestion.style.wordBreak = "break-word"
+        this.#flashcardQuestion.style.overflowWrap = "break-word"
+        this.#flashcardQuestion.style.hyphens = "auto"
+      }
 
-        // Update navigation buttons
+      // Hide answer immediately while transitioning cards
+      if (this.#flashcardAnswer) {
+        this.#flashcardAnswer.style.display = "none"
+      }
+
+      // Update answer text only after a slight delay
+      setTimeout(() => {
+        if (this.#flashcardAnswer) {
+          // Now update the answer text when safely hidden
+          this.#flashcardAnswer.textContent = currentCard.answer
+          // Ensure answer text is properly formatted for long words
+          this.#flashcardAnswer.style.wordBreak = "break-word"
+          this.#flashcardAnswer.style.overflowWrap = "break-word"
+          this.#flashcardAnswer.style.hyphens = "auto"
+        }
+      }, 300) // Match the CSS transition duration
+
+      // Update reveal button
+      if (this.#revealButton) {
+        this.#revealButton.textContent = "Reveal Answer"
+        this.#revealButton.disabled = false
+      }
+
+      // Update navigation buttons
+      if (this.#prevButton) {
         this.#prevButton.disabled = this.#currentCardIndex === 0
+      }
+
+      if (this.#nextButton) {
         this.#nextButton.disabled =
           this.#currentCardIndex === this.#collection.cards.length - 1
-      } else {
-        // Handle empty collection
+      }
+
+      // Apply transitions for smooth animation
+      setTimeout(() => {
+        const flashcard = this.shadowRoot.querySelector(".memora-flashcard")
+        if (flashcard) {
+          flashcard.style.opacity = "1"
+        }
+      }, 50)
+    }
+
+    /**
+     * Shows an empty state when no cards are found
+     */
+    #showEmptyState() {
+      if (this.#flashcardQuestion) {
         this.#flashcardQuestion.textContent = "No flashcards in this collection"
+      }
+
+      if (this.#flashcardAnswer) {
         this.#flashcardAnswer.textContent = "Add cards to get started"
+      }
+
+      // Hide reveal button for empty collections
+      if (this.#revealButton) {
+        this.#revealButton.disabled = true
+      }
+
+      // Disable navigation buttons
+      if (this.#prevButton) {
         this.#prevButton.disabled = true
+      }
+
+      if (this.#nextButton) {
+        this.#nextButton.disabled = true
+      }
+
+      // Update collection meta
+      if (this.#collectionMeta) {
+        this.#collectionMeta.textContent = "No cards available"
+      }
+    }
+
+    /**
+     * Shows an error state with a message
+     */
+    #showErrorState(message = "Error loading flashcards") {
+      if (this.#flashcardQuestion) {
+        this.#flashcardQuestion.textContent = message
+      }
+
+      if (this.#flashcardAnswer) {
+        this.#flashcardAnswer.textContent = "Please try again"
+      }
+
+      if (this.#collectionMeta) {
+        this.#collectionMeta.textContent = "Error"
+      }
+
+      // Hide/disable buttons
+      if (this.#revealButton) {
+        this.#revealButton.disabled = true
+      }
+
+      if (this.#prevButton) {
+        this.#prevButton.disabled = true
+      }
+
+      if (this.#nextButton) {
         this.#nextButton.disabled = true
       }
     }
@@ -175,7 +346,10 @@ customElements.define(
      * Navigates between cards
      */
     #navigateCards(direction) {
-      if (!this.#collection) return
+      // Check if collection and cards exist
+      if (!this.#collection?.cards?.length) {
+        return
+      }
 
       // Calculate new index
       const newIndex = this.#currentCardIndex + direction
@@ -183,6 +357,16 @@ customElements.define(
       // Check if within bounds
       if (newIndex >= 0 && newIndex < this.#collection.cards.length) {
         this.#currentCardIndex = newIndex
+
+        // Always hide the answer when navigating to a new card
+        this.#isAnswerRevealed = false
+        if (this.#answerContainer) {
+          this.#answerContainer.classList.remove("revealed")
+        }
+        if (this.#revealButton) {
+          this.#revealButton.textContent = "Reveal Answer"
+        }
+
         this.#updateFlashcardView()
       }
     }
@@ -195,13 +379,27 @@ customElements.define(
      */
     async #fetchCollectionCards(collectionId, token) {
       try {
-        // Show loading state (could add a loading spinner here)
-        this.#flashcardQuestion.textContent = "Loading..."
-        this.#flashcardAnswer.textContent = ""
+        // Show loading state
+        if (this.#flashcardQuestion) {
+          this.#flashcardQuestion.textContent = "Loading..."
+        }
 
-        // Disable navigation buttons while loading
-        if (this.#prevButton) this.#prevButton.disabled = true
-        if (this.#nextButton) this.#nextButton.disabled = true
+        if (this.#flashcardAnswer) {
+          this.#flashcardAnswer.textContent = "Please wait"
+        }
+
+        // Hide buttons during loading
+        if (this.#revealButton) {
+          this.#revealButton.disabled = true
+        }
+
+        if (this.#prevButton) {
+          this.#prevButton.disabled = true
+        }
+
+        if (this.#nextButton) {
+          this.#nextButton.disabled = true
+        }
 
         // Fetch collection data
         const response = await fetch(`${this.#collectionURL}/${collectionId}`, {
@@ -218,18 +416,25 @@ customElements.define(
 
         const data = await response.json()
 
-        // Store the collection data
-        this.#collection = data
+        // Process the flashcards data structure based on the API response
+        this.#collection = {
+          cards: data.flashcards || [],
+        }
+
+        // Reset to first card
         this.#currentCardIndex = 0
 
-        // Update the view with the new data
-        this.#updateFlashcardView()
+        // Update the view
+        if (this.#collection.cards.length > 0) {
+          this.#updateFlashcardView()
+        } else {
+          this.#showEmptyState()
+        }
       } catch (error) {
-        // console.error("Error fetching collection cards:", error)
+        console.error("Error fetching flashcards:", error)
 
         // Show error state
-        this.#flashcardQuestion.textContent = "Error loading flashcards"
-        this.#flashcardAnswer.textContent = "Please try again"
+        this.#showErrorState("Error loading flashcards")
       }
     }
 
