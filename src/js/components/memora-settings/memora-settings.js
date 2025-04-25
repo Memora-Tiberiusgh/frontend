@@ -13,6 +13,7 @@ customElements.define(
     #flashcardsAPI = "http://localhost:8086/api/v1/flashcards"
     #collectionAPI = "http://localhost:8086/api/v1/collection"
     #token = null
+    #currentEditingCardIndex = null
 
     // DOM elements
     #collectionNameInput
@@ -25,6 +26,9 @@ customElements.define(
     #answerInput
     #generalSettingsView
     #addCardView
+    #editQuestionInput
+    #editAnswerInput
+    #editCardView
 
     /**
      * Creates an instance of MemoraSettings and attaches shadow DOM
@@ -79,10 +83,20 @@ customElements.define(
       )
       this.#questionInput = this.shadowRoot.querySelector("#flashcard-question")
       this.#answerInput = this.shadowRoot.querySelector("#flashcard-answer")
+      this.#editQuestionInput = this.shadowRoot.querySelector(
+        "#edit-flashcard-question"
+      )
+      this.#editAnswerInput = this.shadowRoot.querySelector(
+        "#edit-flashcard-answer"
+      )
+
       this.#generalSettingsView = this.shadowRoot.querySelector(
         ".memora-general-settings-view"
       )
       this.#addCardView = this.shadowRoot.querySelector(".memora-add-card-view")
+      this.#editCardView = this.shadowRoot.querySelector(
+        ".memora-edit-card-view"
+      )
 
       // Set initial values if attributes were set before connection
       if (this.#collectionName) {
@@ -156,13 +170,35 @@ customElements.define(
       )
       addCardBtn.addEventListener("click", () => this.#addFlashcard())
 
-      // Cards list event delegation for remove buttons
+      // Back button from edit view
+      const backFromEditBtn = this.shadowRoot.querySelector(
+        ".memora-button-back-from-edit"
+      )
+      backFromEditBtn.addEventListener("click", () =>
+        this.#showGeneralSettingsView()
+      )
+
+      // Save edited card button
+      const saveCardBtn = this.shadowRoot.querySelector(
+        ".memora-button-save-card"
+      )
+      saveCardBtn.addEventListener("click", () => this.#saveEditedFlashcard())
+
+      // Cards list event delegation for remove buttons and card clicks
       this.#cardsList.addEventListener("click", (event) => {
+        const card = event.target.closest(".memora-card-item")
+        if (!card) return
+
         if (event.target.closest(".memora-remove-card")) {
-          const card = event.target.closest(".memora-card-item")
           const index = Array.from(this.#cardsList.children).indexOf(card)
           if (index !== -1) {
             this.#removeFlashcard(index)
+          }
+        } else {
+          // If the click wasn't on the remove button, it's a card edit
+          const index = Array.from(this.#cardsList.children).indexOf(card)
+          if (index !== -1) {
+            this.#editFlashcard(index)
           }
         }
       })
@@ -171,6 +207,13 @@ customElements.define(
       this.#answerInput.addEventListener("keydown", (event) => {
         if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
           this.#addFlashcard()
+        }
+      })
+
+      // Allow Enter with Ctrl/Cmd to submit edited flashcard
+      this.#editAnswerInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+          this.#saveEditedFlashcard()
         }
       })
     }
@@ -186,12 +229,96 @@ customElements.define(
     }
 
     /**
+     * Shows the Edit Card view
+     */
+    #showEditCardView() {
+      console.log("Showing edit card view")
+      this.#generalSettingsView.style.display = "none"
+      this.#addCardView.style.display = "none"
+      this.#editCardView.style.display = "block"
+      this.#editQuestionInput.focus()
+    }
+
+    /**
      * Shows the General Settings view
      */
     #showGeneralSettingsView() {
       console.log("Showing general settings view")
       this.#addCardView.style.display = "none"
+      this.#editCardView.style.display = "none"
       this.#generalSettingsView.style.display = "block"
+      this.#currentEditingCardIndex = null
+    }
+
+    /**
+     * Prepares the edit form for a flashcard
+     */
+    #editFlashcard(index) {
+      if (index >= 0 && index < this.#cards.length) {
+        const card = this.#cards[index]
+        this.#currentEditingCardIndex = index
+
+        // Set the form values
+        this.#editQuestionInput.value = card.question
+        this.#editAnswerInput.value = card.answer
+
+        // Show edit view
+        this.#showEditCardView()
+      }
+    }
+
+    /**
+     * Saves the edited flashcard
+     */
+    async #saveEditedFlashcard() {
+      if (this.#currentEditingCardIndex === null) return
+
+      const question = this.#editQuestionInput.value.trim()
+      const answer = this.#editAnswerInput.value.trim()
+
+      // Validate inputs
+      if (!question || !answer) {
+        alert("Please enter both question and answer")
+        if (!question) this.#editQuestionInput.focus()
+        else this.#editAnswerInput.focus()
+        return
+      }
+
+      try {
+        const flashcardId = this.#cards[this.#currentEditingCardIndex].id
+
+        const response = await fetch(`${this.#flashcardsAPI}/${flashcardId}`, {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${this.#token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            question: question,
+            answer: answer,
+          }),
+        })
+
+        if (!response.ok) {
+          this.#errorMessage.textContent = "Failed to update the flashcard"
+          this.#errorMessage.style.display = "block"
+          return
+        }
+
+        // Update the card in the local array
+        this.#cards[this.#currentEditingCardIndex].question = question
+        this.#cards[this.#currentEditingCardIndex].answer = answer
+
+        // Re-render the cards
+        this.#renderCards()
+
+        // Go back to the general view
+        this.#showGeneralSettingsView()
+      } catch (error) {
+        this.#errorMessage.textContent =
+          "An error occurred while updating the flashcard"
+        this.#errorMessage.style.display = "block"
+      }
     }
 
     /**
