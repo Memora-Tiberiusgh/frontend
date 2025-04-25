@@ -124,9 +124,9 @@ customElements.define(
         )
 
         if (!response.ok) {
-          this.#errorMessage.textContent =
+          this.#showError(
             "The description could not be retrieved for some reason"
-          this.#errorMessage.style.display = "block"
+          )
         }
 
         const data = await response.json()
@@ -222,8 +222,9 @@ customElements.define(
      * Shows the Add Card view
      */
     #showAddCardView() {
-      console.log("Showing add card view")
+      this.#hideError()
       this.#generalSettingsView.style.display = "none"
+      this.#editCardView.style.display = "none"
       this.#addCardView.style.display = "block"
       this.#questionInput.focus()
     }
@@ -232,7 +233,7 @@ customElements.define(
      * Shows the Edit Card view
      */
     #showEditCardView() {
-      console.log("Showing edit card view")
+      this.#hideError()
       this.#generalSettingsView.style.display = "none"
       this.#addCardView.style.display = "none"
       this.#editCardView.style.display = "block"
@@ -243,11 +244,48 @@ customElements.define(
      * Shows the General Settings view
      */
     #showGeneralSettingsView() {
-      console.log("Showing general settings view")
+      this.#hideError()
       this.#addCardView.style.display = "none"
       this.#editCardView.style.display = "none"
       this.#generalSettingsView.style.display = "block"
       this.#currentEditingCardIndex = null
+    }
+
+    /**
+     * Shows an error message
+     * @param {string} message - The error message to display
+     */
+    #showError(message) {
+      // Get the currently visible view
+      let currentView
+      if (this.#generalSettingsView.style.display !== "none") {
+        currentView = this.#generalSettingsView
+      } else if (this.#addCardView.style.display !== "none") {
+        currentView = this.#addCardView
+      } else if (this.#editCardView.style.display !== "none") {
+        currentView = this.#editCardView
+      }
+
+      // Find the error message element in the current view
+      const errorElement = currentView.querySelector(".memora-error-message")
+
+      if (errorElement) {
+        errorElement.textContent = message
+        errorElement.style.display = "block"
+      }
+    }
+
+    /**
+     * Hides all error messages
+     */
+    #hideError() {
+      // Hide all error messages in all views
+      const errorElements = this.shadowRoot.querySelectorAll(
+        ".memora-error-message"
+      )
+      errorElements.forEach((el) => {
+        el.style.display = "none"
+      })
     }
 
     /**
@@ -278,11 +316,12 @@ customElements.define(
 
       // Validate inputs
       if (!question || !answer) {
-        alert("Please enter both question and answer")
+        this.#showError("Please enter both question and answer")
         if (!question) this.#editQuestionInput.focus()
         else this.#editAnswerInput.focus()
         return
       }
+      this.#hideError()
 
       try {
         const flashcardId = this.#cards[this.#currentEditingCardIndex].id
@@ -300,8 +339,7 @@ customElements.define(
         })
 
         if (!response.ok) {
-          this.#errorMessage.textContent = "Failed to update the flashcard"
-          this.#errorMessage.style.display = "block"
+          this.#showError("Failed to update the flashcard")
           return
         }
 
@@ -315,9 +353,7 @@ customElements.define(
         // Go back to the general view
         this.#showGeneralSettingsView()
       } catch (error) {
-        this.#errorMessage.textContent =
-          "An error occurred while updating the flashcard"
-        this.#errorMessage.style.display = "block"
+        this.#showError("An error occurred while updating the flashcard")
       }
     }
 
@@ -338,8 +374,7 @@ customElements.define(
         )
 
         if (!response.ok) {
-          this.#errorMessage.textContent = "Could not load flashcards"
-          this.#errorMessage.style.display = "block"
+          this.#showError("Could not load flashcards")
           return
         }
 
@@ -353,9 +388,7 @@ customElements.define(
           answer: card.answer,
         }))
       } catch (error) {
-        this.#errorMessage.textContent =
-          "An error occurred while loading flashcards"
-        this.#errorMessage.style.display = "block"
+        this.#showError("An error occurred while loading flashcards")
         this.#cards = []
       } finally {
         this.#renderCards()
@@ -373,14 +406,11 @@ customElements.define(
         // Validate input
         //:TODO: Validate the text length
         if (!newName) {
-          this.#errorMessage.textContent = "Please enter a collection name"
-          this.#errorMessage.style.display = "block"
+          this.#showError("Please enter a collection name")
           this.#collectionNameInput.focus()
           return
         }
-
-        // Reset error message
-        this.#errorMessage.style.display = "none"
+        this.#hideError()
 
         // Fetch collection data
         const response = await fetch(
@@ -399,9 +429,9 @@ customElements.define(
         )
 
         if (!response.ok) {
-          this.#errorMessage.textContent =
+          this.#showError(
             "The name and/or the description could not be saved for some reason"
-          this.#errorMessage.style.display = "block"
+          )
         }
 
         // Update component state
@@ -409,8 +439,7 @@ customElements.define(
         this.#collectionName = newName
         this.#dbDescription = newDescription
       } catch (error) {
-        this.#errorMessage.textContent = "An unexpected error occurred"
-        this.#errorMessage.style.display = "block"
+        this.#showError("An unexpected error occurred")
       }
     }
 
@@ -451,9 +480,7 @@ customElements.define(
         //:TODO: Notify the parent component about the deletion ang change it there as well
         this.#removeSettings()
       } catch (error) {
-        this.#errorMessage.textContent =
-          "The collection could not be deleted for some reason"
-        this.#errorMessage.style.display = "block"
+        this.#showError("The collection could not be deleted for some reason")
         // console.error(error)
       }
     }
@@ -475,13 +502,14 @@ customElements.define(
 
       //:TODO: Validate inputs length
       if (!question || !answer) {
-        alert("Please enter both question and answer")
+        this.#showError("Please enter both question and answer")
         if (!question) this.#questionInput.focus()
         else this.#answerInput.focus()
         return
       }
 
-      console.log("Adding flashcard:", { question, answer })
+      this.#hideError()
+
       try {
         // Fetch collection data
         const response = await fetch(`${this.#flashcardsAPI}`, {
@@ -499,9 +527,9 @@ customElements.define(
 
         if (!response.ok) {
           //:TODO: Move the error to the add new card div
-          this.#errorMessage.textContent =
+          this.#showError(
             "The question and answer could not be created for some reason"
-          this.#errorMessage.style.display = "block"
+          )
         } else {
           const flashcardData = await response.json()
 
@@ -517,9 +545,7 @@ customElements.define(
           this.#questionInput.focus()
         }
       } catch (error) {
-        this.#errorMessage.textContent =
-          "The collection could not be deleted for some reason"
-        this.#errorMessage.style.display = "block"
+        this.#showError("The flashcard could not be created for some reason")
         // console.error(error)
       }
     }
@@ -543,9 +569,7 @@ customElements.define(
           )
 
           if (!response.ok) {
-            this.#errorMessage.textContent =
-              "The flashcard could not be deleted"
-            this.#errorMessage.style.display = "block"
+            this.#showError("An error occurred while deleting the flashcard")
             return
           }
 
@@ -553,9 +577,7 @@ customElements.define(
           this.#cards.splice(index, 1)
           this.#renderCards()
         } catch (error) {
-          this.#errorMessage.textContent =
-            "An error occurred while deleting the flashcard"
-          this.#errorMessage.style.display = "block"
+          this.#showError("An error occurred while deleting the flashcard")
         }
       }
     }

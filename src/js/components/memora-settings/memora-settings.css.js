@@ -22,7 +22,6 @@ cssTemplate.innerHTML = `
     --danger-light: #fee2e2;
     display: block;
     width: 100%;
-
   }
   
   *, *::before, *::after {
@@ -44,8 +43,9 @@ cssTemplate.innerHTML = `
   }
   
   .memora-general-settings-view,
-  .memora-add-card-view {
-    min-height: 600px; /* Set fixed height for both views */
+  .memora-add-card-view,
+  .memora-edit-card-view {
+    min-height: 600px; /* Set fixed height for all views */
   }
   
   @keyframes fade-in {
@@ -248,11 +248,18 @@ cssTemplate.innerHTML = `
     font-size: 0.9rem;
   }
   
-  .memora-card-management-section {
+  .memora-card-management-section,
+  .memora-visibility-section {
     margin-top: 24px;
     margin-bottom: 24px;
     padding-top: 20px;
     border-top: 1px solid var(--gray-light);
+  }
+  
+  .memora-visibility-description {
+    color: var(--text-dark);
+    margin-bottom: 16px;
+    font-size: 0.9rem;
   }
   
   .memora-flashcard-inputs-vertical {
@@ -342,6 +349,7 @@ cssTemplate.innerHTML = `
     align-items: center;
     justify-content: center;
     border-radius: 50%;
+    z-index: 10;
   }
   
   .memora-remove-card:hover {
@@ -356,6 +364,90 @@ cssTemplate.innerHTML = `
     flex-grow: 1;
     width: 100%;
   }
+  
+  /* Notification styles */
+  .memora-notification {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fade-in 0.3s ease;
+  }
+  
+  .memora-notification-content {
+    background-color: white;
+    border-radius: 12px;
+    padding: 24px;
+    width: 90%;
+    max-width: 500px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  }
+  
+  .memora-notification-close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--gray);
+  }
+  
+  .memora-notification-close:hover {
+    color: var(--text-dark);
+  }
+  
+  .memora-notification-icon {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 16px;
+    background-color: var(--success);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 32px;
+  }
+  
+  .memora-notification-title {
+    font-size: 1.5rem;
+    margin-bottom: 12px;
+    color: var(--text-dark);
+  }
+  
+  .memora-notification-message {
+    color: var(--text-dark);
+    margin-bottom: 20px;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  // Enhanced error message styles
+.memora-error-message {
+  color: var(--error);
+  margin: 16px 0;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background-color: var(--danger-light);
+  border-left: 4px solid var(--danger);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+.memora-error-message::before {
+  content: "⚠️";
+  margin-right: 10px;
+  font-size: 1.2rem;
+}
   
   /* Responsive design */
   @media (max-width: 768px) {
