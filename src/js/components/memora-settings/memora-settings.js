@@ -138,7 +138,7 @@ customElements.define(
 
       // Cancel button
       const cancelBtn = this.shadowRoot.querySelector(".memora-button-cancel")
-      cancelBtn.addEventListener("click", () => this.#cancel())
+      cancelBtn.addEventListener("click", () => this.#removeSettings())
 
       // Add New Card button (show add card view)
       const addNewCardBtn = this.shadowRoot.querySelector(
@@ -198,8 +198,41 @@ customElements.define(
      * Loads collection data from the API
      */
     async #loadCollection() {
-      console.log("Loading collection data for ID:", this.#collectionId)
-      this.#renderCards()
+      try {
+        const response = await fetch(
+          `${this.#flashcardsAPI}/collection/${this.#collectionId}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${this.#token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        )
+
+        if (!response.ok) {
+          this.#errorMessage.textContent = "Could not load flashcards"
+          this.#errorMessage.style.display = "block"
+          return
+        }
+
+        const responseData = await response.json()
+        const flashcardsData = responseData.flashcards
+
+        // Store complete flashcard objects including IDs
+        this.#cards = flashcardsData.map((card) => ({
+          id: card.id,
+          question: card.question,
+          answer: card.answer,
+        }))
+      } catch (error) {
+        this.#errorMessage.textContent =
+          "An error occurred while loading flashcards"
+        this.#errorMessage.style.display = "block"
+        this.#cards = []
+      } finally {
+        this.#renderCards()
+      }
     }
 
     /**
@@ -269,15 +302,39 @@ customElements.define(
         return
       }
 
-      console.log("Deleting collection:", this.#collectionId)
-      //:TODO: API request here
+      try {
+        const response = await fetch(
+          `${this.#collectionAPI}/${this.#collectionId}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${this.#token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        )
+
+        if (!response.ok) {
+          this.#errorMessage.textContent =
+            "The collection could not be deleted for some reason"
+          this.#errorMessage.style.display = "block"
+        }
+
+        // Update component state
+        //:TODO: Notify the parent component about the deletion ang change it there as well
+        this.#removeSettings()
+      } catch (error) {
+        this.#errorMessage.textContent =
+          "The collection could not be deleted for some reason"
+        this.#errorMessage.style.display = "block"
+        // console.error(error)
+      }
     }
 
     /**
      * Cancels the settings changes
      */
-    #cancel() {
-      console.log("Cancelling settings changes")
+    #removeSettings() {
       this.remove()
       //:TODO: Add the welcome screen and remove focus
     }
@@ -285,7 +342,7 @@ customElements.define(
     /**
      * Adds a flashcard to the collection
      */
-    #addFlashcard() {
+    async #addFlashcard() {
       const question = this.#questionInput.value.trim()
       const answer = this.#answerInput.value.trim()
 
@@ -298,30 +355,81 @@ customElements.define(
       }
 
       console.log("Adding flashcard:", { question, answer })
-      //:TODO: API request here
+      try {
+        // Fetch collection data
+        const response = await fetch(`${this.#flashcardsAPI}`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${this.#token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            question: question,
+            answer: answer,
+            collectionId: this.#collectionId,
+          }),
+        })
 
-      // Add to cards array
-      this.#cards.push({ question, answer })
+        if (!response.ok) {
+          //:TODO: Move the error to the add new card div
+          this.#errorMessage.textContent =
+            "The question and answer could not be created for some reason"
+          this.#errorMessage.style.display = "block"
+        } else {
+          const flashcardData = await response.json()
 
-      // Update the UI
-      this.#renderCards()
+          // Add to cards array
+          this.#cards.push({ id: flashcardData.id, question, answer })
 
-      // Clear inputs
-      this.#questionInput.value = ""
-      this.#answerInput.value = ""
-      this.#questionInput.focus()
+          // Update the UI
+          this.#renderCards()
+
+          // Clear inputs
+          this.#questionInput.value = ""
+          this.#answerInput.value = ""
+          this.#questionInput.focus()
+        }
+      } catch (error) {
+        this.#errorMessage.textContent =
+          "The collection could not be deleted for some reason"
+        this.#errorMessage.style.display = "block"
+        // console.error(error)
+      }
     }
 
     /**
      * Removes a flashcard at the specified index
      */
-    #removeFlashcard(index) {
+    async #removeFlashcard(index) {
       if (index >= 0 && index < this.#cards.length) {
-        console.log("Removing flashcard at index:", index)
-        //:TODO: API request here
+        const flashcard = this.#cards[index]
+        try {
+          const response = await fetch(
+            `${this.#flashcardsAPI}/${flashcard.id}`,
+            {
+              method: "DELETE",
+              headers: {
+                Authorization: `Bearer ${this.#token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          )
 
-        this.#cards.splice(index, 1)
-        this.#renderCards()
+          if (!response.ok) {
+            this.#errorMessage.textContent =
+              "The flashcard could not be deleted"
+            this.#errorMessage.style.display = "block"
+            return
+          }
+
+          // If successful, remove from local array
+          this.#cards.splice(index, 1)
+          this.#renderCards()
+        } catch (error) {
+          this.#errorMessage.textContent =
+            "An error occurred while deleting the flashcard"
+          this.#errorMessage.style.display = "block"
+        }
       }
     }
 
