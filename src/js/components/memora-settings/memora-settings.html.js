@@ -29,6 +29,9 @@ htmlTemplate.innerHTML = `
           <div class="memora-input-requirements">0-500 characters</div>
         </div>
         
+        <!-- Error message positioned before buttons -->
+        <p class="memora-error-message" style="display: none;"></p>
+        
         <div class="memora-buttons">
           <button class="memora-button memora-button-cancel">Cancel</button>
           <button class="memora-button memora-button-primary memora-button-save">Save Changes</button>
@@ -40,14 +43,20 @@ htmlTemplate.innerHTML = `
             Add New Card
           </button>
         </div>
+
+        <div class="memora-visibility-section">
+          <h3 class="memora-subsection-title">Collection Visibility</h3>
+          <p class="memora-visibility-description">Make your collection available to other users. Public collections are reviewed by our team before being published.</p>
+          <button class="memora-button memora-button-secondary memora-button-make-public">
+            Make Collection Public
+          </button>
+        </div>
         
         <div class="memora-delete-section">
           <h3 class="memora-danger-title">Danger Zone</h3>
           <p class="memora-danger-description">This action cannot be undone. This will permanently delete the collection and all its flashcards.</p>
           <button class="memora-button memora-button-danger memora-button-delete">Delete Collection</button>
         </div>
-        
-        <p class="memora-error-message" style="display: none;"></p>
       </div>
       
       <!-- Add card view (initially hidden) -->
@@ -68,9 +77,39 @@ htmlTemplate.innerHTML = `
           </div>
         </div>
         
+        <!-- Error message positioned before buttons -->
+        <p class="memora-error-message" style="display: none;"></p>
+        
         <div class="memora-buttons">
           <button class="memora-button memora-button-back">Back to Settings</button>
           <button class="memora-button memora-button-primary memora-button-add-card">Add Card</button>
+        </div>
+      </div>
+
+      <!-- Edit card view (initially hidden) -->
+      <div class="memora-view memora-edit-card-view" style="display: none;">
+        <h2 class="memora-section-title">Edit Card</h2>
+        
+        <div class="memora-flashcard-inputs-vertical">
+          <div class="memora-input-group">
+            <label for="edit-flashcard-question">Question</label>
+            <textarea id="edit-flashcard-question" class="memora-input" placeholder="Enter question..." maxlength="500"></textarea>
+            <div class="memora-input-requirements">3-500 characters</div>
+          </div>
+          
+          <div class="memora-input-group">
+            <label for="edit-flashcard-answer">Answer</label>
+            <textarea id="edit-flashcard-answer" class="memora-input" placeholder="Enter answer..." maxlength="1000"></textarea>
+            <div class="memora-input-requirements">1-1000 characters</div>
+          </div>
+        </div>
+        
+        <!-- Error message positioned before buttons -->
+        <p class="memora-error-message" style="display: none;"></p>
+        
+        <div class="memora-buttons">
+          <button class="memora-button memora-button-back-from-edit">Cancel</button>
+          <button class="memora-button memora-button-primary memora-button-save-card">Save Changes</button>
         </div>
       </div>
     </div>
@@ -82,6 +121,16 @@ htmlTemplate.innerHTML = `
         <p class="memora-no-cards-message">No cards in this collection yet. Add your first card using the Add New Card button.</p>
         <ul class="memora-cards-list"></ul>
       </div>
+    </div>
+  </div>
+
+  <!-- Notification popup -->
+  <div class="memora-notification" style="display: none;">
+    <div class="memora-notification-content">
+      <span class="memora-notification-close">&times;</span>
+      <div class="memora-notification-icon">✓</div>
+      <h3 class="memora-notification-title">Success</h3>
+      <p class="memora-notification-message"></p>
     </div>
   </div>
 </div>
