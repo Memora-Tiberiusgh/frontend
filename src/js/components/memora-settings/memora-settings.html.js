@@ -52,7 +52,7 @@ htmlTemplate.innerHTML = `
       
       <!-- Add card view (initially hidden) -->
       <div class="memora-view memora-add-card-view" style="display: none;">
-        <h2 class="memora-section-title">Add New Card</h2>
+        <h2 class="memora-section-title">Add New Cards</h2>
         
         <div class="memora-flashcard-inputs-vertical">
           <div class="memora-input-group">

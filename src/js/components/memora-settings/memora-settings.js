@@ -10,11 +10,13 @@ customElements.define(
     #collectionName = ""
     #collectionId = null
     #cards = []
-    #apiEndpoint = "http://localhost:8086/api/v1/collection"
+    #flashcardsAPI = "http://localhost:8086/api/v1/flashcards"
+    #collectionAPI = "http://localhost:8086/api/v1/collection"
     #token = null
 
     // DOM elements
     #collectionNameInput
+    #dbDescription
     #descriptionInput
     #errorMessage
     #cardsList
@@ -38,12 +40,7 @@ customElements.define(
      * List of observed attributes
      */
     static get observedAttributes() {
-      return [
-        "token",
-        "collection-id",
-        "collection-name",
-        "collection-description",
-      ]
+      return ["token", "collection-id", "collection-name"]
     }
 
     /**
@@ -59,10 +56,6 @@ customElements.define(
         this.#collectionName = newValue
         if (this.#collectionNameInput) {
           this.#collectionNameInput.value = newValue
-        }
-      } else if (name === "collection-description" && newValue) {
-        if (this.#descriptionInput) {
-          this.#descriptionInput.value = newValue
         }
       }
     }
@@ -96,8 +89,39 @@ customElements.define(
         this.#collectionNameInput.value = this.#collectionName
       }
 
+      this.#getDescription()
+
       // Setup event listeners
       this.#setupEventListeners()
+    }
+
+    async #getDescription() {
+      try {
+        // Fetch collection's description
+        const response = await fetch(
+          `${this.#collectionAPI}/${this.#collectionId}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${this.#token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        )
+
+        if (!response.ok) {
+          this.#errorMessage.textContent =
+            "The description could not be retrieved for some reason"
+          this.#errorMessage.style.display = "block"
+        }
+
+        const data = await response.json()
+        this.#descriptionInput.textContent = data.description
+
+        //:TODO: Implement feedback UI
+      } catch (error) {
+        // console.error(error)
+      }
     }
 
     /**
@@ -182,32 +206,52 @@ customElements.define(
      * Saves the collection settings
      */
     async #saveSettings() {
-      const newName = this.#collectionNameInput.value.trim()
-      const newDescription = this.#descriptionInput.value.trim()
+      try {
+        const newName = this.#collectionNameInput.value.trim()
+        const newDescription = this.#descriptionInput.value.trim()
 
-      // Validate input
-      //:TODO: Validate the text length
-      if (!newName) {
-        this.#errorMessage.textContent = "Please enter a collection name"
+        // Validate input
+        //:TODO: Validate the text length
+        if (!newName) {
+          this.#errorMessage.textContent = "Please enter a collection name"
+          this.#errorMessage.style.display = "block"
+          this.#collectionNameInput.focus()
+          return
+        }
+
+        // Reset error message
+        this.#errorMessage.style.display = "none"
+
+        // Fetch collection data
+        const response = await fetch(
+          `${this.#collectionAPI}/${this.#collectionId}`,
+          {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${this.#token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              name: newName,
+              description: newDescription,
+            }),
+          }
+        )
+
+        if (!response.ok) {
+          this.#errorMessage.textContent =
+            "The name and/or the description could not be saved for some reason"
+          this.#errorMessage.style.display = "block"
+        }
+
+        // Update component state
+        //:TODO: Notify the parent component about the name change ang change it there as well
+        this.#collectionName = newName
+        this.#dbDescription = newDescription
+      } catch (error) {
+        this.#errorMessage.textContent = "An unexpected error occurred"
         this.#errorMessage.style.display = "block"
-        this.#collectionNameInput.focus()
-        return
       }
-
-      console.log("Saving name and description:", {
-        collectionId: this.#collectionId,
-        name: newName,
-        description: newDescription,
-      })
-
-      // Reset error message
-      this.#errorMessage.style.display = "none"
-
-      //:TODO: API request
-
-      // Update component state
-      //:TODO: Notify the parent component about the name change ang change it there as well
-      this.#collectionName = newName
     }
 
     /**
