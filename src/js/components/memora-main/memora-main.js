@@ -412,8 +412,22 @@ customElements.define(
 
           // Update UI to reflect the new name
           this.#renderCollections()
+        })
 
-          //
+        settingsComponent.addEventListener("collection-deleted", () => {
+          // Remove the deleted collection from the collections array
+          this.#collections = this.#collections.filter(
+            (collection) => collection.id !== this.#currentCollection.id
+          )
+
+          // Reset the current collection since it's been deleted
+          this.#currentCollection = null
+
+          // Re-render the collections list in the sidebar
+          this.#renderCollections()
+
+          // Show the welcome screen since no collection is selected now
+          this.#showWelcomeScreen()
         })
 
         // Append to main content
@@ -667,34 +681,6 @@ customElements.define(
       } else {
         this.#showReviewComponent(this.#currentCollection.id)
       }
-    }
-
-    /**
-     * Handles the successful creation of a collection
-     *
-     * @param {Object} collectionData - Data of the created collection
-     */
-    #handleCollectionCreated(collectionData) {
-      // Hide the collection creator
-      this.#clearMainContent()
-      this.#isCreatingCollection = false
-
-      // Create a new collection object
-      const newCollection = {
-        id: collectionData.id,
-        name: collectionData.name,
-        isPublic: collectionData.isPublic || false,
-        cards: [], // They'll be fetched when selected
-      }
-
-      // Add to collections array
-      this.#collections.push(newCollection)
-
-      // Update UI
-      this.#renderCollections()
-
-      // Select the new collection (which will fetch its cards)
-      this.#selectCollection(newCollection)
     }
 
     #updateCollections(collections) {
