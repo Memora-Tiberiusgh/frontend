@@ -481,7 +481,12 @@ customElements.define(
           this.#errorMessage.style.display = "block"
         }
 
-        this.#removeSettings()
+        // Notify the parent component about the name change ang change it there as well
+        const event = new CustomEvent("collection-deleted")
+
+        this.dispatchEvent(event)
+
+        this.remove()
       } catch (error) {
         this.#showError("The collection could not be deleted for some reason")
         // console.error(error)
@@ -497,7 +502,6 @@ customElements.define(
       this.dispatchEvent(event)
 
       this.remove()
-      //:TODO: Add the welcome screen and remove focus
     }
 
     /**
