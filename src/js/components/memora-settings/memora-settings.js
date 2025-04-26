@@ -434,10 +434,15 @@ customElements.define(
           )
         }
 
-        // Update component state
-        //:TODO: Notify the parent component about the name change ang change it there as well
         this.#collectionName = newName
         this.#dbDescription = newDescription
+
+        // Notify the parent component about the name change ang change it there as well
+        const event = new CustomEvent("uppdate-name", {
+          detail: this.#collectionName,
+        })
+
+        this.dispatchEvent(event)
       } catch (error) {
         this.#showError("An unexpected error occurred")
       }
@@ -476,8 +481,6 @@ customElements.define(
           this.#errorMessage.style.display = "block"
         }
 
-        // Update component state
-        //:TODO: Notify the parent component about the deletion ang change it there as well
         this.#removeSettings()
       } catch (error) {
         this.#showError("The collection could not be deleted for some reason")
@@ -489,6 +492,10 @@ customElements.define(
      * Cancels the settings changes
      */
     #removeSettings() {
+      const event = new CustomEvent("settings-canceled")
+
+      this.dispatchEvent(event)
+
       this.remove()
       //:TODO: Add the welcome screen and remove focus
     }

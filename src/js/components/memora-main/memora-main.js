@@ -234,7 +234,7 @@ customElements.define(
               collectionItem.classList.add("active")
 
               // Show the settings for this collection, but don't fetch cards
-              this.#showCollectionSettings(collection)
+              this.#showSettingsComponent(collection.id)
             }
 
             return
@@ -263,7 +263,7 @@ customElements.define(
         this.#addCollectionButton.addEventListener(
           "click",
           () => {
-            this.#showCollectionCreator()
+            this.#showCreateCollectionComponent()
           },
           { signal }
         )
@@ -282,19 +282,25 @@ customElements.define(
     }
 
     // Keep state of the collection in focus
-    #updateCollectionActiveState(collection) {
+    #updateCollectionActiveState(collection = null) {
       // Update collection items to show active state
       const collectionItems = this.shadowRoot.querySelectorAll(
         ".memora-collection-item"
       )
+      // First, remove active from all
       collectionItems.forEach((item) => {
         item.classList.remove("active")
-
-        const itemName = item.textContent.trim().replace("Public", "").trim()
-        if (itemName === collection.name) {
-          item.classList.add("active")
-        }
       })
+
+      // Only set active if a collection was provided
+      if (collection) {
+        collectionItems.forEach((item) => {
+          const itemName = item.textContent.trim().replace("Public", "").trim()
+          if (itemName === collection.name) {
+            item.classList.add("active")
+          }
+        })
+      }
     }
 
     /**
@@ -359,14 +365,66 @@ customElements.define(
     /**
      * Shows the collection settings component
      */
-    #showCollectionSettings(collection) {
+    async #showSettingsComponent(collectionId) {
       // Hide the welcome screen and review view
       this.#welcomeScreen.style.display = "none"
 
       // Remove any existing components from main content
       this.#clearMainContent()
 
-      console.log("Now i should render the settings webcomponent")
+      try {
+        // Dynamically import the review component
+        await import("../memora-settings")
+
+        // Create the review component
+        const settingsComponent = document.createElement("memora-settings")
+
+        // Pass the collection ID and auth token
+        if (this.#userProfile && this.#userProfile.token) {
+          settingsComponent.setAttribute("token", this.#userProfile.token)
+        }
+
+        // Pass the collection name for display purposes
+        if (this.#currentCollection) {
+          settingsComponent.setAttribute(
+            "collection-name",
+            this.#currentCollection.name
+          )
+        }
+
+        settingsComponent.setAttribute("collection-id", collectionId)
+
+        settingsComponent.addEventListener("settings-canceled", () => {
+          // Hide the creator
+          this.#clearMainContent()
+
+          // Show the review component for the current collection
+          if (this.#currentCollection) {
+            this.#showReviewComponent(this.#currentCollection.id)
+          } else {
+            this.#showWelcomeScreen()
+          }
+        })
+
+        settingsComponent.addEventListener("uppdate-name", (event) => {
+          // Update the collection name if needed
+          this.#currentCollection.name = event.detail
+
+          // Update UI to reflect the new name
+          this.#renderCollections()
+
+          //
+        })
+
+        // Append to main content
+        this.#mainContent.appendChild(settingsComponent)
+      } catch (error) {
+        console.error("Error loading review component:", error)
+        // Show error message to user
+        alert("Unable to load the settings. Please try again.")
+        // Return to welcome screen
+        this.#showWelcomeScreen()
+      }
     }
 
     /**
@@ -407,8 +465,10 @@ customElements.define(
         this.#mainContent.appendChild(reviewComponent)
       } catch (error) {
         console.error("Error loading review component:", error)
-        this.#errorMessage.textContent = `Error loading review component. Please try again.`
-        this.#errorMessage.style.display = "block"
+        // Show error message to user
+        alert("Unable to load the flashcards creator. Please try again.")
+        // Return to welcome screen
+        this.#showWelcomeScreen()
       }
     }
 
@@ -474,6 +534,9 @@ customElements.define(
           return
         }
 
+        console.log("TOKEN")
+        console.log(token)
+
         const response = await fetch(this.#collectionURL, {
           method: "GET",
           headers: {
@@ -504,15 +567,18 @@ customElements.define(
     /**
      * Shows the collection creator component
      */
-    async #showCollectionCreator() {
+    async #showCreateCollectionComponent() {
+      // Clear active state from all collections
+      this.#updateCollectionActiveState()
+
+      // Store current collection to restore if component is canceled
+      const previousCollection = this.#currentCollection
+
       // Hide other views
       this.#welcomeScreen.style.display = "none"
 
       // Clear the main content
       this.#clearMainContent()
-
-      // Show loading indicator if desired
-      // You could add a simple loading spinner here
 
       try {
         // Dynamically import the collection component
@@ -566,6 +632,11 @@ customElements.define(
 
         collectionCreator.addEventListener("collection-cancelled", () => {
           this.#hideCollectionCreator()
+
+          // Restore previous active collection if it existed
+          if (previousCollection) {
+            this.#updateCollectionActiveState(previousCollection)
+          }
         })
 
         // Append to main content
