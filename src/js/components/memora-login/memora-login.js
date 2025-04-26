@@ -9,6 +9,8 @@ customElements.define(
    * Extends the HTMLElement
    */
   class extends HTMLElement {
+    #abortController = null
+
     /**
      * Creates an instance of the custom element and attaches a shadow DOM.
      */
@@ -17,30 +19,16 @@ customElements.define(
       this.attachShadow({ mode: "open" })
       this.shadowRoot.appendChild(cssTemplate.content.cloneNode(true))
       this.shadowRoot.appendChild(htmlTemplate.content.cloneNode(true))
-    }
 
-    /**
-     * Returns an array of attributes to be observed for changes.
-     *
-     * @returns {string[]} The list of attributes to be observed.
-     */
-    static get observedAttributes() {
-      return []
+      this.#abortController = new AbortController()
     }
-
-    /**
-     * Called when one of the observed attributes changes.
-     *
-     * @param {string} name The name of the attribute that changed.
-     * @param {string} oldValue The old value of the attribute.
-     * @param {string} newValue The new value of the attribute.
-     */
-    attributeChangedCallback(name, oldValue, newValue) {}
 
     /**
      * Called when the element is connected to the DOM.
      */
     connectedCallback() {
+      const signal = this.#abortController.signal
+
       // Set up event listeners for authentication
       const googleLoginBtn = this.shadowRoot.getElementById("google-login")
       const twitterLoginBtn = this.shadowRoot.getElementById("twitter-login")
@@ -50,6 +38,7 @@ customElements.define(
       googleLoginBtn.addEventListener("click", () => {
         const provider = new GoogleAuthProvider()
 
+        //:TODO: Change to async await?
         signInWithPopup(auth, provider)
           .then((result) => {
             // This gives you a Google Access Token. You can use it to access the Google API.
@@ -60,31 +49,47 @@ customElements.define(
             console.log("Successfully signed in with Google", user)
             // IdP data available using getAdditionalUserInfo(result)
           })
-          .catch((error) => {
-            // Handle Errors here.
-            const errorCode = error.code
-            const errorMessage = error.message
-            console.error("Google sign-in error:", errorMessage)
-            // The email of the user's account used.
-            const email = error.customData?.email
-            // The AuthCredential type that was used.
-            const credential = GoogleAuthProvider.credentialFromError(error)
-            // You might want to display the error to the user
-          })
+          .catch(
+            (error) => {
+              // Handle Errors here.
+              const errorCode = error.code
+              const errorMessage = error.message
+              console.error("Google sign-in error:", errorMessage)
+              // The email of the user's account used.
+              const email = error.customData?.email
+              // The AuthCredential type that was used.
+              const credential = GoogleAuthProvider.credentialFromError(error)
+              // You might want to display the error to the user
+            },
+            { signal }
+          )
       })
 
-      twitterLoginBtn.addEventListener("click", () => {
-        console.log("Twitter login not implemented yet")
-      })
+      twitterLoginBtn.addEventListener(
+        "click",
+        () => {
+          console.log("Twitter login not implemented yet")
+        },
+        { signal }
+      )
 
-      appleLoginBtn.addEventListener("click", () => {
-        console.log("Apple login not implemented yet")
-      })
+      appleLoginBtn.addEventListener(
+        "click",
+        () => {
+          console.log("Apple login not implemented yet")
+        },
+        { signal }
+      )
     }
 
     /**
      * Called when the element is disconnected from the DOM.
      */
-    disconnectedCallback() {}
+    disconnectedCallback() {
+      // Abort all event listeners at once
+      if (this.#abortController) {
+        this.#abortController.abort()
+      }
+    }
   }
 )
