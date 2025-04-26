@@ -81,6 +81,7 @@ cssTemplate.innerHTML = `
         list-style: none;
         flex-grow: 1;
         overflow-y: auto;
+        overflow-x: hidden;
     }
 
     .memora-collection-item {
@@ -89,6 +90,10 @@ cssTemplate.innerHTML = `
         border-radius: 8px;
         cursor: pointer;
         transition: all 0.2s ease;
+        word-break: break-word;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
     }
 
     .memora-collection-item:hover {
@@ -287,6 +292,9 @@ cssTemplate.innerHTML = `
 
     .memora-collection-name-text {
         flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .memora-settings-icon {

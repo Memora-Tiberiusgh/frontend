@@ -208,14 +208,11 @@ customElements.define(
             const collectionItem = settingsIcon.closest(
               ".memora-collection-item"
             )
-            const nameElement = collectionItem.querySelector(
-              ".memora-collection-name-text"
-            )
-            const collectionName = nameElement.textContent.trim()
+            const collectionId = collectionItem.dataset.collectionId
 
             // Find the collection in the data
             const collection = this.#collections.find(
-              (c) => c.name === collectionName
+              (c) => c.id === collectionId
             )
 
             if (collection) {
@@ -242,12 +239,9 @@ customElements.define(
 
           const collectionItem = event.target.closest(".memora-collection-item")
           if (collectionItem) {
-            const collectionName = collectionItem.textContent.trim()
-            // Handle public badge text
+            const collectionId = collectionItem.dataset.collectionId
             const collection = this.#collections.find(
-              (c) =>
-                c.name === collectionName ||
-                (collectionName.includes(c.name) && c.isPublic)
+              (c) => c.id === collectionId
             )
 
             if (collection) {
@@ -295,8 +289,8 @@ customElements.define(
       // Only set active if a collection was provided
       if (collection) {
         collectionItems.forEach((item) => {
-          const itemName = item.textContent.trim().replace("Public", "").trim()
-          if (itemName === collection.name) {
+          // Use the collection ID for comparison
+          if (item.dataset.collectionId === collection.id) {
             item.classList.add("active")
           }
         })
@@ -317,6 +311,8 @@ customElements.define(
         // Create list item
         const item = document.createElement("li")
         item.className = "memora-collection-item"
+        // Add the collection ID as a data attribute to toggle the correct collection as "active"
+        item.dataset.collectionId = collection.id
 
         // Create name span
         const nameSpan = document.createElement("span")
