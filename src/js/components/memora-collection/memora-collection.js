@@ -123,7 +123,8 @@ customElements.define(
       addCardBtn.addEventListener("click", () => this.#addFlashcard())
 
       const finishBtn = this.shadowRoot.querySelector(".memora-button-finish")
-      finishBtn.addEventListener("click", () => this.#cancel())
+      //The parent component is allready informed when creating the collection and there is no need for extra logic here
+      finishBtn.addEventListener("click", () => this.remove())
 
       // Success step
       const doneBtn = this.shadowRoot.querySelector(".memora-button-finish")
