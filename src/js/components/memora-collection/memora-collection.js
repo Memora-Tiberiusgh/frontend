@@ -10,20 +10,20 @@ customElements.define(
     #collectionName = ""
     #collectionId = null
     #cards = []
-    #apiEndpoint = "http://localhost:8086/api/v1/collection"
+    #collectionAPI = "http://localhost:8086/api/v1/collection"
+    #flashcardsAPI = "http://localhost:8086/api/v1/flashcards"
     #token = null
 
     // DOM elements
-    #collectionStep
-    #flashcardStep
-    #successStep
+    #creationView
+    #flashcardsView
     #collectionNameInput
     #errorMessage
+    #flashcardErrorMessage
     #questionInput
     #answerInput
     #cardsList
     #noCardsMessage
-    #cardCount
     #descriptionInput
     #collectionNameDisplay
 
@@ -58,13 +58,12 @@ customElements.define(
      */
     connectedCallback() {
       // Cache DOM elements
-      this.#collectionStep = this.shadowRoot.querySelector(
-        ".memora-step-collection"
+      this.#creationView = this.shadowRoot.querySelector(
+        ".memora-creation-view"
       )
-      this.#flashcardStep = this.shadowRoot.querySelector(
-        ".memora-step-flashcards"
+      this.#flashcardsView = this.shadowRoot.querySelector(
+        ".memora-flashcards-view"
       )
-      this.#successStep = this.shadowRoot.querySelector(".memora-step-success")
       this.#collectionNameInput =
         this.shadowRoot.querySelector("#collection-name")
       this.#errorMessage = this.shadowRoot.querySelector(
@@ -76,10 +75,17 @@ customElements.define(
       this.#noCardsMessage = this.shadowRoot.querySelector(
         ".memora-no-cards-message"
       )
-      this.#cardCount = this.shadowRoot.querySelector(".memora-card-count")
       this.#descriptionInput = this.shadowRoot.querySelector(
         "#collection-description"
       )
+
+      // Find flashcard error message if present
+      const errorMessages = this.shadowRoot.querySelectorAll(
+        ".memora-error-message"
+      )
+      if (errorMessages.length > 1) {
+        this.#flashcardErrorMessage = errorMessages[1] // Second error message element
+      }
 
       // Setup event listeners
       this.#setupEventListeners()
@@ -117,10 +123,10 @@ customElements.define(
       addCardBtn.addEventListener("click", () => this.#addFlashcard())
 
       const finishBtn = this.shadowRoot.querySelector(".memora-button-finish")
-      finishBtn.addEventListener("click", () => this.#finishCollection())
+      finishBtn.addEventListener("click", () => this.#cancel())
 
       // Success step
-      const doneBtn = this.shadowRoot.querySelector(".memora-button-done")
+      const doneBtn = this.shadowRoot.querySelector(".memora-button-finish")
       doneBtn.addEventListener("click", () =>
         this.dispatchEvent(new CustomEvent("collection-done"))
       )
@@ -160,11 +166,11 @@ customElements.define(
       }
 
       // Reset error message
-      this.#errorMessage.style.display = "none"
+      this.#hideError()
 
       try {
         // Make API request to create collection
-        const response = await fetch(this.#apiEndpoint, {
+        const response = await fetch(this.#collectionAPI, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${this.#token}`,
@@ -201,14 +207,52 @@ customElements.define(
         } else {
           // Handle error
           const error = await response.json()
-          this.#errorMessage.textContent =
+          this.#showError(
             error.message || "Failed to create collection. Please try again."
-          this.#errorMessage.style.display = "block"
+          )
         }
       } catch (error) {
-        this.#errorMessage.textContent =
+        this.#showError(
           "An error occurred. Please check your connection and try again."
-        this.#errorMessage.style.display = "block"
+        )
+      }
+    }
+
+    /**
+     * Shows an error message in the creation view
+     */
+    #showError(message) {
+      if (this.#errorMessage) {
+        this.#errorMessage.textContent = message
+        this.#errorMessage.style.display = "flex"
+      }
+    }
+
+    /**
+     * Hides the error message in the creation view
+     */
+    #hideError() {
+      if (this.#errorMessage) {
+        this.#errorMessage.style.display = "none"
+      }
+    }
+
+    /**
+     * Shows an error message in the flashcard view
+     */
+    #showFlashcardError(message) {
+      if (this.#flashcardErrorMessage) {
+        this.#flashcardErrorMessage.textContent = message
+        this.#flashcardErrorMessage.style.display = "flex"
+      }
+    }
+
+    /**
+     * Hides the error message in the flashcard view
+     */
+    #hideFlashcardError() {
+      if (this.#flashcardErrorMessage) {
+        this.#flashcardErrorMessage.style.display = "none"
       }
     }
 
@@ -217,10 +261,10 @@ customElements.define(
      */
     #showFlashcardStep() {
       // Hide collection step
-      this.#collectionStep.style.display = "none"
+      this.#creationView.style.display = "none"
 
       // Show flashcard step
-      this.#flashcardStep.style.display = "block"
+      this.#flashcardsView.style.display = "block"
 
       // Focus on question input
       this.#questionInput.focus()
@@ -229,37 +273,102 @@ customElements.define(
     /**
      * Adds a flashcard to the collection
      */
-    #addFlashcard() {
+    async #addFlashcard() {
       const question = this.#questionInput.value.trim()
       const answer = this.#answerInput.value.trim()
 
       // Validate inputs
       if (!question || !answer) {
-        alert("Please enter both question and answer")
+        this.#showFlashcardError("Please enter both question and answer")
         if (!question) this.#questionInput.focus()
         else this.#answerInput.focus()
         return
       }
 
-      // Add to cards array
-      this.#cards.push({ question, answer })
+      // Hide error if it exists
+      this.#hideFlashcardError()
 
-      // Update the UI
-      this.#renderCards()
+      try {
+        // Make API request to create flashcard
+        const response = await fetch(this.#flashcardsAPI, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${this.#token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            question: question,
+            answer: answer,
+            collectionId: this.#collectionId,
+          }),
+        })
 
-      // Clear inputs
-      this.#questionInput.value = ""
-      this.#answerInput.value = ""
-      this.#questionInput.focus()
+        if (!response.ok) {
+          this.#showFlashcardError(
+            "Failed to create flashcard. Please try again."
+          )
+          return
+        }
+
+        // Get the created flashcard data
+        const flashcardData = await response.json()
+
+        // Add to cards array with the ID from the API
+        this.#cards.push({
+          id: flashcardData.id,
+          question: question,
+          answer: answer,
+        })
+
+        // Update the UI
+        this.#renderCards()
+
+        // Clear inputs
+        this.#questionInput.value = ""
+        this.#answerInput.value = ""
+        this.#questionInput.focus()
+      } catch (error) {
+        this.#showFlashcardError(
+          "An error occurred. Please check your connection and try again."
+        )
+      }
     }
 
     /**
      * Removes a flashcard at the specified index
      */
-    #removeFlashcard(index) {
+    async #removeFlashcard(index) {
       if (index >= 0 && index < this.#cards.length) {
-        this.#cards.splice(index, 1)
-        this.#renderCards()
+        const flashcard = this.#cards[index]
+
+        try {
+          // Make API request to delete flashcard
+          const response = await fetch(
+            `${this.#flashcardsAPI}/${flashcard.id}`,
+            {
+              method: "DELETE",
+              headers: {
+                Authorization: `Bearer ${this.#token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          )
+
+          if (!response.ok) {
+            this.#showFlashcardError(
+              "Failed to delete flashcard. Please try again."
+            )
+            return
+          }
+
+          // Remove from local array if API call was successful
+          this.#cards.splice(index, 1)
+          this.#renderCards()
+        } catch (error) {
+          this.#showFlashcardError(
+            "An error occurred while deleting the flashcard."
+          )
+        }
       }
     }
 
@@ -304,73 +413,14 @@ customElements.define(
     }
 
     /**
-     * Finishes collection creation and adds all flashcards
-     */
-    async #finishCollection() {
-      if (this.#cards.length === 0) {
-        // No cards added, show warning
-        if (
-          !confirm(
-            "You haven't added any flashcards. Are you sure you want to finish?"
-          )
-        ) {
-          return
-        }
-      }
-
-      try {
-        // Make API request to add flashcards to the collection
-        const response = await fetch(
-          `${this.#apiEndpoint}/${this.#collectionId}/cards`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${this.#token}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              cards: this.#cards,
-            }),
-          }
-        )
-
-        if (response.ok) {
-          // Cards added successfully
-          this.#showSuccessStep()
-        } else {
-          // Handle error
-          const error = await response.json()
-          throw new Error(error.message || "Failed to add flashcards")
-        }
-      } catch (error) {
-        alert("An error occurred while adding flashcards. Please try again.")
-      }
-    }
-
-    /**
-     * Shows the success step
-     */
-    #showSuccessStep() {
-      // Hide flashcard step
-      this.#flashcardStep.style.display = "none"
-
-      // Show success step
-      this.#successStep.style.display = "block"
-
-      // Update card count
-      this.#cardCount.textContent = this.#cards.length
-    }
-
-    /**
      * Cancels the collection creation
      */
     #cancel() {
-      const event = new CustomEvent("collection-cancelled", {
-        bubbles: true,
-        composed: true,
-      })
+      const event = new CustomEvent("collection-cancelled")
 
       this.dispatchEvent(event)
+
+      this.remove()
     }
   }
 )
