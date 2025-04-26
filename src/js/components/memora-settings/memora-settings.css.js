@@ -437,7 +437,6 @@ cssTemplate.innerHTML = `
         padding: 12px 16px;
         border-radius: 8px;
         background-color: var(--danger-light);
-        border-left: 4px solid var(--danger);
         font-weight: 500;
         display: flex;
         align-items: center;
