@@ -67,7 +67,7 @@ htmlTemplate.innerHTML = `
           <div class="memora-input-group">
             <label for="flashcard-question">Question</label>
             <textarea id="flashcard-question" class="memora-input" placeholder="Enter question..." maxlength="500"></textarea>
-            <div class="memora-input-requirements">3-500 characters</div>
+            <div class="memora-input-requirements">1-500 characters</div>
           </div>
           
           <div class="memora-input-group">
@@ -94,7 +94,7 @@ htmlTemplate.innerHTML = `
           <div class="memora-input-group">
             <label for="edit-flashcard-question">Question</label>
             <textarea id="edit-flashcard-question" class="memora-input" placeholder="Enter question..." maxlength="500"></textarea>
-            <div class="memora-input-requirements">3-500 characters</div>
+            <div class="memora-input-requirements">1-500 characters</div>
           </div>
           
           <div class="memora-input-group">
