@@ -26,7 +26,7 @@ customElements.define(
     #publicBadgeTemplate
     #addCollectionButton
 
-    #collectionURL = "http://localhost:8086/api/v1/collection"
+    #collectionURL = "http://localhost:8186/api/v1/collection"
 
     /**
      * Creates an instance of the custom element and attaches a shadow DOM.
