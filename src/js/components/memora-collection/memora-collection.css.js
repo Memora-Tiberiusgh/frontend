@@ -381,6 +381,72 @@ cssTemplate.innerHTML = `
         font-size: 32px;
     }
 
+        /* Divider */
+    .memora-divider {
+        position: relative;
+        text-align: center;
+        margin: 28px 0;
+    }
+    
+    .memora-divider::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background-color: var(--gray-light);
+    }
+    
+    .memora-divider-text {
+        position: relative;
+        display: inline-block;
+        padding: 0 16px;
+        background-color: white;
+        color: var(--gray);
+        font-size: 0.9rem;
+    }
+    
+    /* Browse button */
+    .memora-browse-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 12px;
+        border: 1px dashed var(--secondary);
+        background-color: transparent;
+        border-radius: 8px;
+        color: var(--secondary);
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .memora-browse-button:hover {
+        background-color: rgba(245, 158, 11, 0.05); 
+    }
+
+    .memora-mini-badge {
+        background-color: var(--secondary);
+        color: white;
+        font-size: 0.7rem;
+        padding: 3px 8px;
+        border-radius: 12px;
+        margin-left: 8px;
+    }
+
+
+    
+    .memora-browse-icon {
+        font-size: 1.2rem;
+        margin-right: 10px;
+    }
+    
+    .memora-browse-text {
+        font-size: 1rem;
+    }
+
     /* Responsive layout for flashcards container */
     @media (min-width: 992px) {
         .memora-flashcard-container {
