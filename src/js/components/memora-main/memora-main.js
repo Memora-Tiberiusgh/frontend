@@ -602,6 +602,11 @@ customElements.define(
           collectionCreator.setAttribute("token", this.#userProfile.token)
         }
 
+        collectionCreator.addEventListener("browse-public-collections", () => {
+          console.log("browse-public-collections")
+          this.showPublicCollections()
+        })
+
         // Set up event listeners for the component
         collectionCreator.addEventListener("collection-created", (event) => {
           // Get the collection data from the event
@@ -677,6 +682,19 @@ customElements.define(
       } else {
         this.#showReviewComponent(this.#currentCollection.id)
       }
+    }
+
+    /**
+     * Shows the interface for public collections
+     */
+    async showPublicCollections() {
+      this.#clearMainContent()
+      await import("../memora-public")
+
+      const publicCollectionBrowser = document.createElement("memora-public")
+      publicCollectionBrowser.setAttribute("token", this.#userProfile.token)
+
+      this.#mainContent.appendChild(publicCollectionBrowser)
     }
 
     #updateCollections(collections) {
