@@ -14,12 +14,10 @@ test:
 build:
   stage: build
   image:
-    name: gcr.io/kaniko-project/executor:debug
+    name: gcr.io/kaniko-project/executor:v1.9.0-debug
     entrypoint: [""]
-  script: |
-    mkdir -p /kaniko/.docker
-    echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
-    echo "Registry URL: $CI_REGISTRY"
-    echo "Registry User: $CI_REGISTRY_USER"
-    echo "Image Path: $CI_REGISTRY_IMAGE:latest"
-    /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $CI_REGISTRY_IMAGE:latest
+  script:  # See https://docs.gitlab.com/ee/ci/docker/using_kaniko.html
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}"  
+      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+      --destination "${CI_REGISTRY_IMAGE}:${CI_COMMIT_TAG:-latest}"            
