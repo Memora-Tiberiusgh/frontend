@@ -1,3 +1,4 @@
+//TEST
 export default {
   root: "src",
   build: {
