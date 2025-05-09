@@ -8,7 +8,8 @@ export const cssTemplate = document.createElement("template")
 cssTemplate.innerHTML = `
 <style>
     :host {
-        --primary: #6366f1;
+        // --primary: #6366f1;
+        --primary: #f72a3b;
         --primary-dark: #4f46e5;
         --secondary: #f59e0b;
         --text-dark: #1f2937;
