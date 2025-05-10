@@ -24,9 +24,26 @@ cssTemplate.innerHTML = `
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
+    *, *::before, *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    .memora-collection {
+        width: 100%;
+        margin: 0 auto;
+        animation: fade-in 0.3s ease-in-out;
+    }
+
+    @keyframes fade-in {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
     .memora-breadcrumb-nav {
         margin-bottom: 16px;
-        }
+    }
 
     .memora-breadcrumb-link {
         display: flex;
@@ -47,11 +64,9 @@ cssTemplate.innerHTML = `
     }
     
     /* Collection header styles */
-    .memora-collection-header {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-bottom: 24px;
+    .memora-settings-header {
+        text-align: center;
+        margin-bottom: 30px;
     }
     
     .memora-collection-title {
@@ -62,29 +77,49 @@ cssTemplate.innerHTML = `
         text-align: center;
     }
     
-    .memora-back-to-collections-button {
-        padding: 8px 16px;
+    .memora-settings-container {
+        display: flex;
+        flex-direction: column;
+        max-width: 1200px;
+        margin: 0 auto;
+        gap: 32px;
+    }
+    
+    /* Section container style */
+    .memora-section {
+        background-color: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        padding: 32px;
+        width: 100%;
+        box-sizing: border-box;
     }
     
     /* Collection grid styles */
     .memora-collections-grid {
         display: grid;
-        grid-template-columns: repeat(1, 1fr);
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         gap: 24px;
         margin-bottom: 32px;
         width: 100%;
     }
-    
-    @media (min-width: 640px) {
-        .memora-collections-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
+
+    /* For 1 card only - center it */
+    .memora-collections-grid.single-card {
+        grid-template-columns: minmax(300px, 400px);
+        justify-content: center;
     }
-    
-    @media (min-width: 992px) {
-        .memora-collections-grid {
-            grid-template-columns: repeat(3, 1fr);
-        }
+
+    /* For 2 cards - arrange them nicely */
+    .memora-collections-grid.two-cards {
+        grid-template-columns: repeat(2, minmax(280px, 400px));
+        justify-content: center;
+    }
+
+    /* For 3 cards - three columns */
+    .memora-collections-grid.three-cards {
+        grid-template-columns: repeat(3, minmax(250px, 350px));
+        justify-content: center;
     }
     
     /* Card styles */
@@ -219,13 +254,15 @@ cssTemplate.innerHTML = `
     .memora-detail-view {
         max-width: 800px;
         margin: 0 auto;
+        width: 100%;
     }
     
     .memora-detail-container {
-        background-color: white;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        padding: 32px;
+        /* Using memora-section class now, so these are redundant */
+        /* background-color: white; */
+        /* border-radius: 12px; */
+        /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); */
+        /* padding: 32px; */
         width: 100%;
     }
     
@@ -384,60 +421,59 @@ cssTemplate.innerHTML = `
     }
 
     /* Back button styles */
-.memora-back-button {
-    display: flex;
-    align-items: center;
-    background: none;
-    border: none;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--text-dark);
-    cursor: pointer;
-    padding: 8px 12px;
-    border-radius: 6px;
-    transition: all 0.2s ease;
-}
+    .memora-back-button {
+        display: flex;
+        align-items: center;
+        background: none;
+        border: none;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-dark);
+        cursor: pointer;
+        padding: 8px 12px;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
 
-.memora-back-button:hover {
-    background-color: rgba(99, 102, 241, 0.08);
-    color: var(--primary);
-}
+    .memora-back-button:hover {
+        background-color: rgba(99, 102, 241, 0.08);
+        color: var(--primary);
+    }
 
-.memora-back-button:focus {
-    outline: 2px solid var(--primary);
-    outline-offset: 2px;
-}
+    .memora-back-button:focus {
+        outline: 2px solid var(--primary);
+        outline-offset: 2px;
+    }
 
-.memora-back-icon {
-    font-size: 1.125rem;
-    margin-right: 8px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
+    .memora-back-icon {
+        font-size: 1.125rem;
+        margin-right: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-.memora-back-text {
-    font-weight: 500;
-}
+    .memora-back-text {
+        font-weight: 500;
+    }
 
-/* Breadcrumb specific styles */
-.memora-breadcrumb-nav {
-    margin-bottom: 16px;
-}
+    /* Breadcrumb specific styles */
+    .memora-breadcrumb-nav {
+        margin-bottom: 16px;
+    }
 
-.memora-breadcrumb-style {
-    padding: 4px 8px;
-}
+    .memora-breadcrumb-style {
+        padding: 4px 8px;
+    }
+
+    /* View styles */
+    .memora-view {
+        animation: fade-in 0.3s ease-in-out;
+    }
     
     /* Responsive styles */
     @media (max-width: 768px) {
-        .memora-collection-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 12px;
-        }
-        
-        .memora-detail-container {
+        .memora-section {
             padding: 24px;
         }
         
@@ -447,6 +483,13 @@ cssTemplate.innerHTML = `
         
         .memora-action-buttons {
             flex-direction: column;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .memora-collections-grid.two-cards,
+        .memora-collections-grid.three-cards {
+            grid-template-columns: minmax(280px, 1fr);
         }
     }
 </style>
