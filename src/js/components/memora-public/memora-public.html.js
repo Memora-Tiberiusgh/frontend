@@ -6,25 +6,27 @@
 export const htmlTemplate = document.createElement("template")
 htmlTemplate.innerHTML = `
 <div class="memora-collection">
-  <div class="memora-collection-header">
+  <div class="memora-settings-header">
     <h1 class="memora-collection-title">Public Collections</h1>
   </div>
   
-  <div class="memora-collection-container">
+  <div class="memora-settings-container">
     <!-- Main collections grid view -->
     <div class="memora-view memora-grid-view">
-      <!-- Collections grid -->
-      <div class="memora-collections-grid"></div>
-      
-      <!-- Load more button -->
-      <div class="memora-load-more">
-        <button class="memora-button memora-button-primary memora-button-load-more">Load More Collections</button>
+      <div class="memora-section">
+        <!-- Collections grid with improved centering -->
+        <div class="memora-collections-grid"></div>
+        
+        <!-- Load more button -->
+        <div class="memora-load-more">
+          <button class="memora-button memora-button-primary memora-button-load-more">Load More Collections</button>
+        </div>
       </div>
     </div>
     
     <!-- Collection detail view (initially hidden) -->
     <div class="memora-view memora-detail-view" style="display: none;">
-      <div class="memora-detail-container">
+      <div class="memora-section memora-detail-container">
         <div class="memora-breadcrumb-nav">
           <button class="memora-back-button memora-breadcrumb-style">
             <span class="memora-back-icon">←</span>
