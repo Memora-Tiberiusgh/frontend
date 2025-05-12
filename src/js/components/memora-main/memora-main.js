@@ -27,8 +27,8 @@ customElements.define(
     #addCollectionButton
     #removeIconTemplate
 
-    #collectionURL = "http://localhost:8186/api/v1/collections"
-    #toggleCollectionURL = "http://localhost:8186/api/v1/users//collections"
+    #collectionURL = "/api/v1/collections"
+    #toggleCollectionURL = "/api/v1/users/collections"
 
     /**
      * Creates an instance of the custom element and attaches a shadow DOM.

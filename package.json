@@ -9,7 +9,8 @@
     "build": "vite build",
     "serve": "vite preview",
     "lint": "npx eslint ./src || exit 0",
-    "lint:fix": "npx eslint ./src --fix || exit 0"
+    "lint:fix": "npx eslint ./src --fix || exit 0",
+    "test": "vitest"
   },
   "contributors": [
     "Tiberius Gherac <tg222hh@student.lnu.se>"
@@ -18,7 +19,9 @@
   "private": true,
   "devDependencies": {
     "@lnu/eslint-config": "^1.1.10",
-    "vite": "^6.3.1"
+    "jsdom": "^26.1.0",
+    "vite": "^6.3.1",
+    "vitest": "^3.1.3"
   },
   "dependencies": {
     "firebase": "^11.6.0"
