@@ -1,5 +1,5 @@
 /**
- * @file The HTML template for the memora-collection web component.
+ * @file A HTML template string for the memora-collection web component.
  * @module memora-collection.html
  */
 // Define the HTML template.
@@ -34,6 +34,16 @@ htmlTemplate.innerHTML = `
         <button class="memora-button memora-button-cancel">Cancel</button>
         <button class="memora-button memora-button-primary memora-button-create">Create Collection</button>
       </div>
+      
+      <!-- Divider -->
+      <div class="memora-divider">
+        <span class="memora-divider-text">or</span>
+      </div>
+      
+      <!-- Browse public collections button -->
+      <button class="memora-browse-button">
+        <span class="memora-browse-text">Browse Public Collections</span>
+      </button>
     </div>
     
     <!-- Flashcard creation view (initially hidden) -->

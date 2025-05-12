@@ -26,6 +26,7 @@ customElements.define(
     #noCardsMessage
     #descriptionInput
     #collectionNameDisplay
+    #browseBtnn
 
     /**
      * Creates an instance of MemoraCollection and attaches shadow DOM
@@ -78,6 +79,7 @@ customElements.define(
       this.#descriptionInput = this.shadowRoot.querySelector(
         "#collection-description"
       )
+      this.#browseBtnn = this.shadowRoot.querySelector(".memora-browse-button")
 
       // Find flashcard error message if present
       const errorMessages = this.shadowRoot.querySelectorAll(
@@ -107,6 +109,10 @@ customElements.define(
 
       this.#collectionNameDisplay = this.shadowRoot.querySelector(
         ".memora-collection-name-display"
+      )
+
+      this.#browseBtnn.addEventListener("click", () =>
+        this.dispatchEvent(new CustomEvent("browse-public-collections"))
       )
 
       // Allow Enter key to submit collection name
