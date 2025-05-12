@@ -22,7 +22,7 @@ customElements.define(
     #nextButton
     #revealButton
 
-    #collectionURL = "/api/v1/flashcards/collection"
+    #collectionURL = "/api/v1/flashcards/collections"
 
     /**
      * Creates an instance of the custom element and attaches a shadow DOM.
