@@ -8,4 +8,8 @@ export default {
   server: {
     allowedHosts: ["cscloud8-66.lnu.se"],
   },
+  test: {
+    environment: "jsdom",
+    globals: true,
+  },
 }
