@@ -3,7 +3,7 @@
  * @module memora-public.css
  */
 // Define the CSS template.
-export const cssTemplate = document.createElement("template")
+export const cssTemplate = document.createElement("template");
 cssTemplate.innerHTML = `
 <style>
     :host {
@@ -179,17 +179,28 @@ cssTemplate.innerHTML = `
     
     .memora-card-header {
         display: flex;
-        justify-content: space-between;
+        flex-wrap: wrap;
         align-items: center;
+        gap: 8px;
         margin-bottom: 12px;
     }
     
+    .memora-card-title-container {
+        display: flex;
+        align-items: center;
+        flex-grow: 1;
+        flex-shrink: 1;
+        min-width: 0;
+    }
+
     .memora-card-title {
         font-size: 1.25rem;
         font-weight: 600;
         color: var(--primary);
         margin: 0;
-        max-width: 70%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
     
     .memora-card-badge {
@@ -490,6 +501,89 @@ cssTemplate.innerHTML = `
     .memora-view {
         animation: fade-in 0.3s ease-in-out;
     }
+
+    /* Already in-collection indicators */
+    .memora-card-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .memora-card-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--primary);
+        margin: 0;
+        margin-right: auto;
+        max-width: 60%;
+    }
+
+    .memora-library-tag {
+        display: inline-flex;
+        background-color: var(--primary);
+        color: white;
+        font-size: 0.65rem;
+        font-weight: 600;
+        padding: 2px 6px;
+        border-radius: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-left: 8px;
+        align-items: center;
+        flex-shrink: 0;
+    }
+
+    .memora-card-badge {
+        display: flex;
+        align-items: center;
+        font-size: 0.875rem;
+        color: var(--text-dark);
+        margin-left: auto;
+        flex-shrink: 0;
+    }
+
+    /* Detail view tag */
+    .memora-detail-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+
+    .memora-detail-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin: 0;
+        margin-right: 10px;
+    }
+
+    .memora-detail-tag {
+        margin-bottom: 0;
+    }
+
+    .memora-detail-title-container {
+        display: flex;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .memora-detail-tag {
+        margin-bottom: 0;
+    }
+
+    /* Disabled button styling */
+    .memora-button-disabled {
+        background-color: var(--gray-light);
+        color: var(--gray);
+        cursor: not-allowed;
+        opacity: 0.8;
+    }
+
+    .memora-button-disabled:hover {
+        background-color: var(--gray-light);
+    }
     
     /* Responsive styles */
     @media (max-width: 768px) {
@@ -513,4 +607,4 @@ cssTemplate.innerHTML = `
         }
     }
 </style>
-`
+`;
