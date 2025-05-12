@@ -1,16 +1,18 @@
 FROM node:22-alpine AS build
 
+RUN addgroup -S nodejs && adduser -S nodejs -G nodejs
+
 WORKDIR /frontend
 
-COPY package*.json ./
+RUN chown -R nodejs:nodejs /frontend
+
+USER nodejs
+
+COPY --chown=nodejs:nodejs package*.json ./
 
 RUN npm install
 
-COPY . .
-
-RUN addgroup -S nodejs && adduser -S nodejs -G nodejs
-
-USER nodejs
+COPY --chown=nodejs:nodejs . .
 
 EXPOSE 5173
 
