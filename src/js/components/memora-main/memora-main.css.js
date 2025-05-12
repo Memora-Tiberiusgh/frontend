@@ -86,14 +86,13 @@ cssTemplate.innerHTML = `
 
     .memora-collection-item {
         padding: 12px 15px;
-        margin-bottom: 8px;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        word-break: break-word;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     }
 
     .memora-collection-item:hover {
@@ -103,22 +102,6 @@ cssTemplate.innerHTML = `
     .memora-collection-item.active {
         background-color: var(--primary);
         color: white;
-    }
-
-    .memora-collection-item.public {
-        position: relative;
-    }
-
-    .memora-public-badge {
-        position: absolute;
-        right: 15px;
-        top: 50%;
-        transform: translateY(-50%);
-        background-color: var(--secondary);
-        color: white;
-        font-size: 0.7rem;
-        padding: 3px 8px;
-        border-radius: 12px;
     }
 
     /* User profile */
@@ -284,17 +267,12 @@ cssTemplate.innerHTML = `
         color: var(--error, #e53935);
     }
 
-    .memora-collection-item {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
     .memora-collection-name-text {
         flex: 1;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-right: 8px;
     }
 
     .memora-settings-icon {
@@ -330,6 +308,61 @@ cssTemplate.innerHTML = `
     .memora-collection-item .memora-settings-icon:hover {
         transform: rotate(45deg);
     }
+
+/* Position the public badge for animation */
+.memora-collection-item.public {
+    position: relative;
+    overflow: hidden; /* Ensure the transition doesn't cause overflow */
+}
+
+/* Style the public badge with transition */
+.memora-public-badge {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: var(--secondary);
+    color: white;
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 12px;
+    transition: transform 0.3s ease;
+}
+
+/* Style the remove icon (initially off-screen to the right) */
+.memora-remove-icon {
+    position: absolute;
+    right: -25px; /* Start off-screen */
+    top: 50%;
+    transform: translateY(-50%);
+    color: #e53935; /* Red color for delete action */
+    cursor: pointer;
+    transition: right 0.3s ease, transform 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+}
+
+/* On hover, slide the badge left and bring in the remove icon */
+.memora-collection-item.public:hover .memora-public-badge {
+    transform: translateY(-50%) translateX(-30px); /* Move left to make space */
+}
+
+.memora-collection-item.public:hover .memora-remove-icon {
+    right: 15px; /* Move into view */
+}
+
+/* Add a scale effect on hover for the remove icon */
+.memora-remove-icon:hover {
+    transform: translateY(-50%) scale(1.2);
+}
+
+/* Ensure the icon is white when collection is active */
+.memora-collection-item.active .memora-remove-icon {
+    color: white;
+}
 
     /* Responsive styles */
     @media (max-width: 992px) {
