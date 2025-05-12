@@ -42,7 +42,6 @@ htmlTemplate.innerHTML = `
       
       <!-- Browse public collections button -->
       <button class="memora-browse-button">
-        <span class="memora-browse-icon">📚</span>
         <span class="memora-browse-text">Browse Public Collections</span>
       </button>
     </div>

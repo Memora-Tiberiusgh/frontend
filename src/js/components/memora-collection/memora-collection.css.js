@@ -414,17 +414,18 @@ cssTemplate.innerHTML = `
         justify-content: center;
         width: 100%;
         padding: 12px;
-        border: 1px dashed var(--secondary);
-        background-color: transparent;
+        border: 1px solid var(--secondary);
+        background-color: var(--secondary);
         border-radius: 8px;
-        color: var(--secondary);
+        color: white;
         font-weight: 500;
         cursor: pointer;
         transition: all 0.2s ease;
     }
 
     .memora-browse-button:hover {
-        background-color: rgba(245, 158, 11, 0.05); 
+        background-color: #e68a00;
+        border-color: #e68a00;
     }
 
     .memora-mini-badge {
@@ -436,8 +437,6 @@ cssTemplate.innerHTML = `
         margin-left: 8px;
     }
 
-
-    
     .memora-browse-icon {
         font-size: 1.2rem;
         margin-right: 10px;
