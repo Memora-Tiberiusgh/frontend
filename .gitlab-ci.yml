@@ -8,7 +8,7 @@ test:
   image: node:20.6
   script:
     - npm install
-    - echo "Running extremely simple test"
+    - echo "Running simple test"
     - npm run test
     - echo "Test passed successfully!"
 
