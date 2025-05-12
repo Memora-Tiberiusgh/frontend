@@ -10,7 +10,7 @@ customElements.define(
     #collectionName = ""
     #collectionId = null
     #cards = []
-    #collectionAPI = "http://localhost:8186/api/v1/collection"
+    #collectionAPI = "http://localhost:8186/api/v1/collections"
     #flashcardsAPI = "http://localhost:8186/api/v1/flashcards"
 
     #token = null

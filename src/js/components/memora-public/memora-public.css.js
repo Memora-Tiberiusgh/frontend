@@ -122,6 +122,35 @@ cssTemplate.innerHTML = `
         justify-content: center;
     }
     
+    /* No more collections indicator */
+    .memora-no-more-collections {
+        margin: 20px 0 10px;
+        text-align: center;
+    }
+    
+    .memora-end-indicator {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        padding: 10px 0;
+    }
+    
+    .memora-end-indicator:before,
+    .memora-end-indicator:after {
+        content: '';
+        height: 1px;
+        background-color: var(--gray-light);
+        flex-grow: 1;
+    }
+    
+    .memora-end-text {
+        font-size: 0.875rem;
+        color: var(--gray);
+        padding: 0 16px;
+        font-weight: 500;
+    }
+    
     /* Card styles */
     .memora-collection-card {
         background-color: white;
@@ -170,8 +199,8 @@ cssTemplate.innerHTML = `
         color: var(--text-dark);
     }
     
-    .memora-star-icon {
-        color: var(--secondary);
+    .memora-card-icon {
+        color: var(--text-dark);
         margin-right: 4px;
     }
     
@@ -243,13 +272,6 @@ cssTemplate.innerHTML = `
         background-color: var(--gray-light);
     }
     
-    .memora-load-more {
-        display: flex;
-        justify-content: center;
-        margin-top: 20px;
-        margin-bottom: 40px;
-    }
-    
     /* Detail view specific styles */
     .memora-detail-view {
         max-width: 800px;
@@ -258,11 +280,6 @@ cssTemplate.innerHTML = `
     }
     
     .memora-detail-container {
-        /* Using memora-section class now, so these are redundant */
-        /* background-color: white; */
-        /* border-radius: 12px; */
-        /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); */
-        /* padding: 32px; */
         width: 100%;
     }
     
@@ -406,18 +423,21 @@ cssTemplate.innerHTML = `
         margin-top: 8px;
     }
     
-    .memora-view-all {
-        text-align: center;
-        margin-top: 16px;
-    }
-    
     .memora-action-buttons {
         display: flex;
         gap: 16px;
     }
     
-    .memora-import-button {
+    .memora-add-button {
         flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    
+    .memora-add-icon {
+        margin-right: 4px;
     }
 
     /* Back button styles */

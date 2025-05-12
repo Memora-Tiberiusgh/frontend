@@ -11,6 +11,8 @@ customElements.define(
     #collections = []
     #selectedCollection = null
     #token
+    #publicCollectionURL = "http://localhost:8186/api/v1/collections/public"
+    #toggleCollectionURL = "http://localhost:8186/api/v1/users//collections"
 
     /**
      * Creates an instance of the custom element and attaches a shadow DOM.
@@ -29,16 +31,12 @@ customElements.define(
       this.collectionsGrid = this.shadowRoot.querySelector(
         ".memora-collections-grid"
       )
-      this.loadMoreButton = this.shadowRoot.querySelector(
-        ".memora-button-load-more"
+      this.noMoreCollections = this.shadowRoot.querySelector(
+        ".memora-no-more-collections"
       )
 
       // Detail elements
-      this.importButton = this.shadowRoot.querySelector(".memora-import-button")
-
-      this.viewAllButton = this.shadowRoot.querySelector(
-        ".memora-view-all-button"
-      )
+      this.addButton = this.shadowRoot.querySelector(".memora-add-button")
       this.detailTitle = this.shadowRoot.querySelector(".memora-detail-title")
       this.descriptionText = this.shadowRoot.querySelector(
         ".memora-description-text"
@@ -46,20 +44,14 @@ customElements.define(
       this.cardsCount = this.shadowRoot.querySelector(".memora-cards-count")
       this.createdDate = this.shadowRoot.querySelector(".memora-created-date")
       this.creatorName = this.shadowRoot.querySelector(".memora-creator-name")
-      this.allCardsCount = this.shadowRoot.querySelector(
-        ".memora-all-cards-count"
-      )
-      this.previewCardsContainer = this.shadowRoot.querySelector(
-        ".memora-preview-cards"
+      this.previewCards = this.shadowRoot.querySelectorAll(
+        ".memora-preview-card"
       )
       this.backButton = this.shadowRoot.querySelector(".memora-back-button")
 
       // Templates
       this.collectionCardTemplate = this.shadowRoot.querySelector(
         "#collection-card-template"
-      )
-      this.previewCardTemplate = this.shadowRoot.querySelector(
-        "#preview-card-template"
       )
     }
 
@@ -96,22 +88,37 @@ customElements.define(
       const signal = this.#abortController.signal
 
       // Add event listeners
-      this.loadMoreButton.addEventListener(
-        "click",
-        () => this.#loadMoreCollections(),
-        { signal }
-      )
       this.backButton.addEventListener("click", () => this.#goBackToGrid(), {
         signal,
       })
 
-      this.importButton.addEventListener(
+      this.addButton.addEventListener(
         "click",
-        () => this.#importCollection(),
-        { signal }
+        () => this.#addToMyCollection(),
+        {
+          signal,
+        }
       )
-      this.viewAllButton.addEventListener("click", () => this.#viewAllCards(), {
-        signal,
+
+      // Add toggle functionality to all hardcoded preview cards
+      this.previewCards.forEach((card) => {
+        const questionElement = card.querySelector(".memora-preview-question")
+        const answerElement = card.querySelector(".memora-preview-answer")
+        const toggleIcon = card.querySelector(".memora-toggle-icon")
+
+        questionElement.addEventListener(
+          "click",
+          () => {
+            if (answerElement.style.display === "none") {
+              answerElement.style.display = "block"
+              toggleIcon.textContent = "↑"
+            } else {
+              answerElement.style.display = "none"
+              toggleIcon.textContent = "↓"
+            }
+          },
+          { signal }
+        )
       })
 
       // Fetch initial collections
@@ -124,196 +131,87 @@ customElements.define(
     async #fetchCollections() {
       if (!this.#token) return
 
-      this.#setLoadingState(true)
-
       try {
-        // For demonstration purposes - use mock data
-        setTimeout(() => {
-          this.#collections = [
-            {
-              id: "1",
-              name: "JavaScript Fundamentals",
-              description:
-                "Core concepts and syntax of JavaScript programming language including variables, functions, objects, arrays, control flow statements, and more advanced topics like closures, promises, and async/await.",
-              cardCount: 42,
-              ownerName: "CodeMaster",
-              createdAt: "2025-03-15T14:30:00Z",
-              previewCards: [
-                {
-                  question: "What is JavaScript?",
-                  answer:
-                    "JavaScript is a scripting language that enables interactive web pages and is an essential part of web applications.",
-                },
-                {
-                  question: "What is a variable?",
-                  answer:
-                    "A variable is a container for storing data values in programming.",
-                },
-                {
-                  question: "Explain closures in JavaScript",
-                  answer:
-                    "A closure is a function that has access to its own scope, the outer function's scope, and the global scope.",
-                },
-              ],
-            },
-            {
-              id: "2",
-              name: "Web Development Glossary",
-              description: "Essential terms for modern web development",
-              cardCount: 78,
-              ownerName: "DevDesigner",
-              createdAt: "2025-03-08T09:15:00Z",
-              previewCards: [
-                {
-                  question: "What is DOM?",
-                  answer:
-                    "The Document Object Model (DOM) is a programming interface for web documents.",
-                },
-                {
-                  question: "What is AJAX?",
-                  answer:
-                    "Asynchronous JavaScript and XML (AJAX) is a technique for creating fast and dynamic web pages.",
-                },
-              ],
-            },
-            // Add more collections from the React example
-          ]
+        const response = await fetch(this.#publicCollectionURL, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${this.#token}`,
+            "Content-type": "application/json",
+          },
+        })
 
-          this.#renderCollectionsGrid()
-          this.#setLoadingState(false)
-        }, 500)
+        if (!response.ok) {
+          throw new Error("API error: " + response.status)
+        }
+
+        const collections = await response.json()
+        console.log(collections)
+        this.#collections = collections
+
+        // Render the collections
+        this.#renderCollectionsGrid()
+
+        // Show "No more collections" indicator if there are collections
+        // This can be controlled by your infinite scroll logic later
+        if (collections.length > 0) {
+          this.noMoreCollections.style.display = "block"
+        } else {
+          this.noMoreCollections.style.display = "none"
+        }
       } catch (error) {
         console.error("Error fetching collections:", error)
-        this.#setLoadingState(false)
       }
     }
 
     /**
-     * Load more collections
+     * Add the selected collection to my collection
      */
-    async #loadMoreCollections() {
-      if (!this.#token) return
-
-      this.#setLoadingState(true)
-
-      try {
-        // TODO: Replace with actual API call to get more collections
-        // const lastId = this.#collections[this.#collections.length - 1]?.id;
-        // const response = await fetch(`/api/collections/public?after=${lastId}`, {
-        //   headers: {
-        //     'Authorization': `Bearer ${this.#token}`
-        //   }
-        // });
-        // if (response.ok) {
-        //   const data = await response.json();
-        //   this.#collections = [...this.#collections, ...data];
-        //   this.#renderCollectionsGrid();
-        // }
-
-        // For demonstration purposes - replace with actual data
-        setTimeout(() => {
-          // Update the grid with new items
-          this.#renderCollectionsGrid()
-          this.#setLoadingState(false)
-        }, 500)
-      } catch (error) {
-        console.error("Error loading more collections:", error)
-        this.#setLoadingState(false)
-      }
-    }
-
-    /**
-     * Fetch a single collection with its preview cards
-     */
-    async #fetchCollectionDetail(collectionId) {
-      if (!this.#token) return
-
-      this.#setLoadingState(true)
-
-      try {
-        // TODO: Replace with actual API call
-        // const response = await fetch(`/api/collections/${collectionId}`, {
-        //   headers: {
-        //     'Authorization': `Bearer ${this.#token}`
-        //   }
-        // });
-        // if (response.ok) {
-        //   this.#selectedCollection = await response.json();
-        //   this.#renderCollectionDetail();
-        // }
-
-        // For demonstration purposes - replace with actual data
-        setTimeout(() => {
-          // Find the collection from the existing collections
-          this.#selectedCollection = this.#collections.find(
-            (c) => c.id === collectionId
-          )
-          this.#renderCollectionDetail()
-          this.#setLoadingState(false)
-        }, 500)
-      } catch (error) {
-        console.error("Error fetching collection details:", error)
-        this.#setLoadingState(false)
-      }
-    }
-
-    /**
-     * Import the selected collection
-     */
-    async #importCollection() {
+    async #addToMyCollection() {
       if (!this.#token || !this.#selectedCollection) return
+      console.log("Selected collection:")
+      console.log(this.#selectedCollection)
 
       // Disable import button
-      this.importButton.disabled = true
-      this.importButton.textContent = "Importing..."
+      this.addButton.disabled = true
+      this.addButton.textContent = "Adding..."
 
       try {
-        // TODO: Replace with actual API call
-        // const response = await fetch(`/api/collections/import/${this.#selectedCollection.id}`, {
-        //   method: 'POST',
-        //   headers: {
-        //     'Authorization': `Bearer ${this.#token}`,
-        //     'Content-Type': 'application/json'
-        //   }
-        // });
-        // if (response.ok) {
-        //   // Success - show notification or message
-        // }
-
-        // For demonstration purposes
-        setTimeout(() => {
-          alert(`Collection imported successfully!`)
-
+        const response = await fetch(
+          `${this.#toggleCollectionURL}/${this.#selectedCollection._id}`,
+          {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${this.#token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        )
+        if (response.ok) {
           // Dispatch event for parent components
           this.dispatchEvent(
-            new CustomEvent("collection-imported", {
-              detail: { collectionId: this.#selectedCollection.id },
+            new CustomEvent("add-collection", {
+              detail: {
+                id: this.#selectedCollection._id,
+                name: this.#selectedCollection.name,
+                isPublic: true,
+              },
             })
           )
+        } else {
+          //:TODO: Add error message
+        }
 
-          // Go back to the grid
-          this.#goBackToGrid()
+        // Go back to the grid
+        this.#goBackToGrid()
 
-          // Reset button state
-          this.importButton.disabled = false
-          this.importButton.textContent = "Import Collection"
-        }, 500)
+        // Reset button state
+        this.addButton.disabled = false
+        this.addButton.textContent = "Add to my collection"
       } catch (error) {
         console.error("Error importing collection:", error)
-        this.importButton.disabled = false
-        this.importButton.textContent = "Import Collection"
+        this.addButton.disabled = false
+        this.addButton.textContent = "Add to my collection"
       }
-    }
-
-    /**
-     * View all cards in the collection
-     */
-    #viewAllCards() {
-      if (!this.#selectedCollection) return
-
-      // TODO: Implement view all cards functionality
-      // This could navigate to a different route or open a modal
-      alert(`This would show all cards in the collection`)
     }
 
     /**
@@ -323,19 +221,6 @@ customElements.define(
       this.#selectedCollection = null
       this.gridView.style.display = "block"
       this.detailView.style.display = "none"
-    }
-
-    /**
-     * Set loading state for the component
-     */
-    #setLoadingState(isLoading) {
-      if (isLoading) {
-        this.loadMoreButton.disabled = true
-        this.loadMoreButton.textContent = "Loading..."
-      } else {
-        this.loadMoreButton.disabled = false
-        this.loadMoreButton.textContent = "Load More Collections"
-      }
     }
 
     /**
@@ -388,11 +273,20 @@ customElements.define(
       cardTitle.textContent = collection.name
       cardCount.textContent = collection.cardCount
       cardDescription.textContent = collection.description
-      ownerName.textContent = collection.ownerName
+      ownerName.textContent = collection.creatorName
       creationDate.textContent = this.#formatDate(collection.createdAt)
 
+      // Add visual indicator if collection is already in library
+      if (collection.isAddedByUser) {
+        cardElement.classList.add("memora-in-library")
+        const badge = document.createElement("div")
+        badge.className = "memora-library-badge"
+        badge.textContent = "In Your Library"
+        cardElement.appendChild(badge)
+      }
+
       // Store ID in data attribute
-      cardElement.dataset.id = collection.id
+      cardElement.dataset.id = collection._id
 
       // Add click event listener
       const signal = this.#abortController.signal
@@ -400,12 +294,30 @@ customElements.define(
         "click",
         (event) => {
           const id = event.currentTarget.dataset.id
-          this.#fetchCollectionDetail(id)
+          // Call the method that displays collection detail
+          this.#displayCollectionDetail(id)
         },
         { signal }
       )
 
       return card
+    }
+
+    /**
+     * Display collection detail - no need to fetch since we already have the data
+     */
+    #displayCollectionDetail(collectionId) {
+      // Find the collection in our local data
+      this.#selectedCollection = this.#collections.find(
+        (c) => c._id === collectionId
+      )
+
+      if (!this.#selectedCollection) {
+        console.error("Collection not found:", collectionId)
+        return
+      }
+      // Render the details
+      this.#renderCollectionDetail()
     }
 
     /**
@@ -416,16 +328,15 @@ customElements.define(
 
       const collection = this.#selectedCollection
 
-      // Set detail content without innerHTML
+      // Set detail content
       this.detailTitle.textContent = collection.name
       this.descriptionText.textContent = collection.description
       this.cardsCount.textContent = collection.cardCount
       this.createdDate.textContent = this.#formatDate(collection.createdAt)
-      this.creatorName.textContent = collection.ownerName
-      this.allCardsCount.textContent = collection.cardCount
+      this.creatorName.textContent = collection.creatorName
 
-      // Render preview cards
-      this.#renderPreviewCards(collection.previewCards)
+      // Update the preview cards (always 5 of them)
+      this.#updatePreviewCards(collection.previewCards || [])
 
       // Show detail view, hide grid view
       this.gridView.style.display = "none"
@@ -433,73 +344,40 @@ customElements.define(
     }
 
     /**
-     * Render preview cards
+     * Update the static preview cards with the data
      */
-    #renderPreviewCards(previewCards) {
-      // Clear existing cards
-      while (this.previewCardsContainer.firstChild) {
-        this.previewCardsContainer.removeChild(
-          this.previewCardsContainer.firstChild
-        )
-      }
+    #updatePreviewCards(previewCards) {
+      // Reset all cards first
+      this.previewCards.forEach((card) => {
+        const questionText = card.querySelector(".memora-question-text")
+        const answerText = card.querySelector(".memora-answer-text")
+        const answerElement = card.querySelector(".memora-preview-answer")
+        const toggleIcon = card.querySelector(".memora-toggle-icon")
 
-      // Handle empty preview cards
-      if (!previewCards || previewCards.length === 0) {
-        const emptyMessage = document.createElement("p")
-        emptyMessage.className = "memora-no-cards-message"
-        emptyMessage.textContent =
-          "No preview cards available for this collection."
-        this.previewCardsContainer.appendChild(emptyMessage)
-        return
-      }
-
-      // Create and append cards
-      previewCards.forEach((card) => {
-        const cardElement = this.previewCardTemplate.content.cloneNode(true)
-
-        // Get references to elements
-        const questionElement = cardElement.querySelector(
-          ".memora-preview-question"
-        )
-        const questionText = cardElement.querySelector(".memora-question-text")
-        const answerText = cardElement.querySelector(".memora-answer-text")
-        const answerElement = cardElement.querySelector(
-          ".memora-preview-answer"
-        )
-        const toggleButton = cardElement.querySelector(".memora-toggle-button")
-
-        // Set text content
-        questionText.textContent = card.question
-        answerText.textContent = card.answer
-
-        // Create toggle icon
-        const toggleIcon = document.createElement("span")
-        toggleIcon.className = "memora-toggle-icon"
+        // Reset content and state
+        questionText.textContent = "No question available"
+        answerText.textContent = "No answer available"
+        answerElement.style.display = "none"
         toggleIcon.textContent = "↓"
 
-        // Clear and append toggle icon
-        while (toggleButton.firstChild) {
-          toggleButton.removeChild(toggleButton.firstChild)
+        // Hide cards initially if we don't have enough data
+        card.style.display = "none"
+      })
+
+      // Update with available data
+      previewCards.forEach((cardData, index) => {
+        if (index < this.previewCards.length) {
+          const card = this.previewCards[index]
+          const questionText = card.querySelector(".memora-question-text")
+          const answerText = card.querySelector(".memora-answer-text")
+
+          // Set content
+          questionText.textContent = cardData.question
+          answerText.textContent = cardData.answer
+
+          // Show this card
+          card.style.display = "block"
         }
-        toggleButton.appendChild(toggleIcon)
-
-        // Add click event listener using signal
-        const signal = this.#abortController.signal
-        questionElement.addEventListener(
-          "click",
-          () => {
-            if (answerElement.style.display === "none") {
-              answerElement.style.display = "block"
-              toggleIcon.textContent = "↑"
-            } else {
-              answerElement.style.display = "none"
-              toggleIcon.textContent = "↓"
-            }
-          },
-          { signal }
-        )
-
-        this.previewCardsContainer.appendChild(cardElement)
       })
     }
 

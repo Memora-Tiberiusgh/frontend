@@ -17,9 +17,11 @@ htmlTemplate.innerHTML = `
         <!-- Collections grid with improved centering -->
         <div class="memora-collections-grid"></div>
         
-        <!-- Load more button -->
-        <div class="memora-load-more">
-          <button class="memora-button memora-button-primary memora-button-load-more">Load More Collections</button>
+        <!-- No collections indicator (initially hidden) -->
+        <div class="memora-no-more-collections" style="display: none;">
+          <div class="memora-end-indicator">
+            <span class="memora-end-text">No more collections to display</span>
+          </div>
         </div>
       </div>
     </div>
@@ -61,23 +63,82 @@ htmlTemplate.innerHTML = `
           </div>
           
           <div class="memora-preview-section">
-            <h3 class="memora-section-title">Preview Cards</h3>
-            <div class="memora-preview-cards"></div>
-            
-            <div class="memora-view-all">
-              <button class="memora-button memora-button-secondary memora-view-all-button">
-                View all <span class="memora-all-cards-count"></span> cards
-              </button>
+            <h3 class="memora-section-title">Random Cards Preview</h3>
+            <div class="memora-preview-cards">
+              <!-- Always have 5 static preview card slots -->
+              <div class="memora-preview-card">
+                <div class="memora-preview-question">
+                  <p class="memora-question-text"></p>
+                  <button class="memora-toggle-button">
+                    <span class="memora-toggle-icon">↓</span>
+                  </button>
+                </div>
+                <div class="memora-preview-answer" style="display: none;">
+                  <span class="memora-answer-label">Answer:</span>
+                  <p class="memora-answer-text"></p>
+                </div>
+              </div>
+              
+              <div class="memora-preview-card">
+                <div class="memora-preview-question">
+                  <p class="memora-question-text"></p>
+                  <button class="memora-toggle-button">
+                    <span class="memora-toggle-icon">↓</span>
+                  </button>
+                </div>
+                <div class="memora-preview-answer" style="display: none;">
+                  <span class="memora-answer-label">Answer:</span>
+                  <p class="memora-answer-text"></p>
+                </div>
+              </div>
+              
+              <div class="memora-preview-card">
+                <div class="memora-preview-question">
+                  <p class="memora-question-text"></p>
+                  <button class="memora-toggle-button">
+                    <span class="memora-toggle-icon">↓</span>
+                  </button>
+                </div>
+                <div class="memora-preview-answer" style="display: none;">
+                  <span class="memora-answer-label">Answer:</span>
+                  <p class="memora-answer-text"></p>
+                </div>
+              </div>
+              
+              <div class="memora-preview-card">
+                <div class="memora-preview-question">
+                  <p class="memora-question-text"></p>
+                  <button class="memora-toggle-button">
+                    <span class="memora-toggle-icon">↓</span>
+                  </button>
+                </div>
+                <div class="memora-preview-answer" style="display: none;">
+                  <span class="memora-answer-label">Answer:</span>
+                  <p class="memora-answer-text"></p>
+                </div>
+              </div>
+              
+              <div class="memora-preview-card">
+                <div class="memora-preview-question">
+                  <p class="memora-question-text"></p>
+                  <button class="memora-toggle-button">
+                    <span class="memora-toggle-icon">↓</span>
+                  </button>
+                </div>
+                <div class="memora-preview-answer" style="display: none;">
+                  <span class="memora-answer-label">Answer:</span>
+                  <p class="memora-answer-text"></p>
+                </div>
+              </div>
             </div>
           </div>
           
           <div class="memora-action-buttons">
-            <button class="memora-button memora-button-primary memora-import-button">
-                <svg class="memora-import-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4 16L4 17C4 18.6569 5.34315 20 7 20L17 20C18.6569 20 20 18.6569 20 17L20 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M12 4L12 16M12 16L16 11M12 16L8 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <button class="memora-button memora-button-primary memora-add-button">
+                <svg class="memora-add-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>    
-            Import Collection</button>
+            Add to my collection</button>
           </div>
         </div>
       </div>
@@ -91,7 +152,10 @@ htmlTemplate.innerHTML = `
         <div class="memora-card-header">
           <h3 class="memora-card-title"></h3>
           <div class="memora-card-badge">
-            <span class="memora-star-icon">★</span>
+          <svg class="memora-card-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="2"/>
+  <path d="M3 10H21" stroke="currentColor" stroke-width="2"/>
+</svg>
             <span class="memora-card-count"></span>
             <span class="memora-card-label">cards</span>
           </div>
@@ -114,21 +178,6 @@ htmlTemplate.innerHTML = `
             <span class="memora-creation-date"></span>
           </div>
         </div>
-      </div>
-    </div>
-  </template>
-  
-  <template id="preview-card-template">
-    <div class="memora-preview-card">
-      <div class="memora-preview-question">
-        <p class="memora-question-text"></p>
-        <button class="memora-toggle-button">
-          <span class="memora-toggle-icon">↓</span>
-        </button>
-      </div>
-      <div class="memora-preview-answer" style="display: none;">
-        <span class="memora-answer-label">Answer:</span>
-        <p class="memora-answer-text"></p>
       </div>
     </div>
   </template>

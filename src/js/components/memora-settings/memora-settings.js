@@ -11,7 +11,7 @@ customElements.define(
     #collectionId = null
     #cards = []
     #flashcardsAPI = "http://localhost:8186/api/v1/flashcards"
-    #collectionAPI = "http://localhost:8186/api/v1/collection"
+    #collectionAPI = "http://localhost:8186/api/v1/collections"
     #token = null
     #currentEditingCardIndex = null
 
@@ -363,7 +363,7 @@ customElements.define(
     async #loadCollection() {
       try {
         const response = await fetch(
-          `${this.#flashcardsAPI}/collection/${this.#collectionId}`,
+          `${this.#flashcardsAPI}/collections/${this.#collectionId}`,
           {
             method: "GET",
             headers: {
