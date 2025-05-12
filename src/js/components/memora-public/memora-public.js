@@ -38,6 +38,9 @@ customElements.define(
       // Detail elements
       this.addButton = this.shadowRoot.querySelector(".memora-add-button")
       this.detailTitle = this.shadowRoot.querySelector(".memora-detail-title")
+      this.detailTitleContainer = this.shadowRoot.querySelector(
+        ".memora-detail-title-container"
+      )
       this.descriptionText = this.shadowRoot.querySelector(
         ".memora-description-text"
       )
@@ -168,8 +171,11 @@ customElements.define(
      */
     async #addToMyCollection() {
       if (!this.#token || !this.#selectedCollection) return
-      console.log("Selected collection:")
-      console.log(this.#selectedCollection)
+
+      // Don't proceed if collection is already added
+      if (this.#selectedCollection.isAddedByUser) {
+        return
+      }
 
       // Disable import button
       this.addButton.disabled = true
@@ -187,6 +193,40 @@ customElements.define(
           }
         )
         if (response.ok) {
+          // Update the local collection data to reflect it's now added
+          this.#selectedCollection.isAddedByUser = true
+
+          // Also update the collection in the main collections array
+          const collectionInArray = this.#collections.find(
+            (c) => c._id === this.#selectedCollection._id
+          )
+          if (collectionInArray) {
+            collectionInArray.isAddedByUser = true
+          }
+
+          // Add the tag to the detail view
+          const detailTag = document.createElement("span")
+          detailTag.className = "memora-library-tag memora-detail-tag"
+          detailTag.textContent = "Added"
+
+          // Get the title container
+          const titleContainer = this.shadowRoot.querySelector(
+            ".memora-detail-title-container"
+          )
+
+          // Add tag after the title if it doesn't exist yet
+          if (
+            titleContainer &&
+            !titleContainer.querySelector(".memora-detail-tag")
+          ) {
+            titleContainer.appendChild(detailTag)
+          }
+
+          // Update button
+          this.addButton.disabled = true
+          this.addButton.textContent = "Already in your library"
+          this.addButton.classList.add("memora-button-disabled")
+
           // Dispatch event for parent components
           this.dispatchEvent(
             new CustomEvent("add-collection", {
@@ -198,15 +238,12 @@ customElements.define(
             })
           )
         } else {
+          // Reset button state on error
+          this.addButton.disabled = false
+          this.addButton.textContent = "Add to my collection"
+
           //:TODO: Add error message
         }
-
-        // Go back to the grid
-        this.#goBackToGrid()
-
-        // Reset button state
-        this.addButton.disabled = false
-        this.addButton.textContent = "Add to my collection"
       } catch (error) {
         console.error("Error importing collection:", error)
         this.addButton.disabled = false
@@ -218,7 +255,13 @@ customElements.define(
      * Go back to the collections grid
      */
     #goBackToGrid() {
+      // Render the collections grid with updated data
+      this.#renderCollectionsGrid()
+
+      // Reset selected collection
       this.#selectedCollection = null
+
+      // Show grid view, hide detail view
       this.gridView.style.display = "block"
       this.detailView.style.display = "none"
     }
@@ -261,8 +304,8 @@ customElements.define(
     #createCollectionCard(collection) {
       const card = this.collectionCardTemplate.content.cloneNode(true)
 
-      // Set card content without innerHTML
       const cardElement = card.querySelector(".memora-collection-card")
+      const titleContainer = card.querySelector(".memora-card-title-container")
       const cardTitle = card.querySelector(".memora-card-title")
       const cardCount = card.querySelector(".memora-card-count")
       const cardDescription = card.querySelector(".memora-card-description")
@@ -273,16 +316,20 @@ customElements.define(
       cardTitle.textContent = collection.name
       cardCount.textContent = collection.cardCount
       cardDescription.textContent = collection.description
-      ownerName.textContent = collection.creatorName
+      ownerName.textContent = collection.creatorName || "Unknown"
       creationDate.textContent = this.#formatDate(collection.createdAt)
 
       // Add visual indicator if collection is already in library
       if (collection.isAddedByUser) {
         cardElement.classList.add("memora-in-library")
-        const badge = document.createElement("div")
-        badge.className = "memora-library-badge"
-        badge.textContent = "In Your Library"
-        cardElement.appendChild(badge)
+
+        // Create tag indicator
+        const tag = document.createElement("span")
+        tag.className = "memora-library-tag"
+        tag.textContent = "Added"
+
+        // Insert the tag into the title container, after the title
+        titleContainer.appendChild(tag)
       }
 
       // Store ID in data attribute
@@ -334,6 +381,33 @@ customElements.define(
       this.cardsCount.textContent = collection.cardCount
       this.createdDate.textContent = this.#formatDate(collection.createdAt)
       this.creatorName.textContent = collection.creatorName
+
+      // Remove existing tag if present
+      const existingTag =
+        this.detailTitleContainer.querySelector(".memora-detail-tag")
+      if (existingTag) {
+        existingTag.remove()
+      }
+
+      // Add tag if collection is in library
+      if (collection.isAddedByUser) {
+        const detailTag = document.createElement("span")
+        detailTag.className = "memora-library-tag memora-detail-tag"
+        detailTag.textContent = "Added"
+
+        // Add the tag directly to the title container
+        this.detailTitleContainer.appendChild(detailTag)
+
+        // Update button state
+        this.addButton.disabled = true
+        this.addButton.textContent = "Already in your library"
+        this.addButton.classList.add("memora-button-disabled")
+      } else {
+        // Reset button if not in library
+        this.addButton.disabled = false
+        this.addButton.textContent = "Add to my collection"
+        this.addButton.classList.remove("memora-button-disabled")
+      }
 
       // Update the preview cards (always 5 of them)
       this.#updatePreviewCards(collection.previewCards || [])
