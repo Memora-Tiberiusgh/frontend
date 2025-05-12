@@ -12,7 +12,7 @@ customElements.define(
     #cards = []
     // #flashcardsAPI = "http://localhost:8086/api/v1/flashcards"
     #flashcardsAPI = "/api/v1/flashcards"
-    #collectionAPI = "/api/v1/collection"
+    #collectionAPI = "/api/v1/collections"
     #token = null
     #currentEditingCardIndex = null
 
