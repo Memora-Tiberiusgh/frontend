@@ -34,7 +34,7 @@ describe("memora-settings tests", () => {
     component.shadowRoot.querySelector(".memora-button-save").click()
 
     // Check fetch was called correctly
-    expect(fetch).toHaveBeenCalledWith("/api/v1/collection/123", {
+    expect(fetch).toHaveBeenCalledWith("/api/v1/collections/123", {
       method: "PATCH",
       headers: {
         Authorization: "Bearer test-token",
@@ -86,7 +86,7 @@ describe("memora-settings tests", () => {
     component.shadowRoot.querySelector(".memora-button-delete").click()
 
     // Check fetch was called correctly
-    expect(fetch).toHaveBeenCalledWith("/api/v1/collection/123", {
+    expect(fetch).toHaveBeenCalledWith("/api/v1/collections/123", {
       method: "DELETE",
       headers: {
         Authorization: "Bearer test-token",
