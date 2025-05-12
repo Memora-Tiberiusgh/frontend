@@ -448,6 +448,40 @@ cssTemplate.innerHTML = `
         font-size: 1.2rem;
     }
 
+    .memora-submission-status {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        background-color: #f0fdf4;
+        border: 1px solid var(--success);
+        border-radius: 8px;
+        margin-bottom: 16px;
+    }
+
+    .memora-status-icon {
+        color: var(--success);
+        font-weight: bold;
+        margin-right: 12px;
+        font-size: 1.2rem;
+    }
+
+    .memora-submission-status p {
+        margin: 0;
+        color: var(--text-dark);
+        font-weight: 500;
+    }
+
+    .memora-button-accent {
+        background-color: var(--secondary);
+        color: white;
+        border: none;
+    }
+
+    .memora-button-accent:hover {
+        background-color: #e68a00; 
+        color: white;
+    }
+
     /* Responsive design */
     @media (max-width: 768px) {
         .memora-section {

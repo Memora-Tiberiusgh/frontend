@@ -25,8 +25,10 @@ customElements.define(
     #settingsIconTemplate
     #publicBadgeTemplate
     #addCollectionButton
+    #removeIconTemplate
 
     #collectionURL = "/api/v1/collections"
+    #toggleCollectionURL = "/api/v1/users/collections"
 
     /**
      * Creates an instance of the custom element and attaches a shadow DOM.
@@ -116,6 +118,10 @@ customElements.define(
         ".memora-add-collection-btn"
       )
 
+      this.#removeIconTemplate = this.shadowRoot.querySelector(
+        "#memora-remove-icon-template"
+      )
+
       // Set up event listeners
       this.#setupEventListeners()
 
@@ -198,6 +204,21 @@ customElements.define(
       this.#collectionsList.addEventListener(
         "click",
         (event) => {
+          // Check if the remove icon was clicked
+          const removeIcon = event.target.closest(".memora-remove-icon")
+          if (removeIcon) {
+            // Stop the event from triggering collection selection
+            event.stopPropagation()
+
+            // Find the collection item and collection data
+            const collectionItem = removeIcon.closest(".memora-collection-item")
+            const collectionId = collectionItem.dataset.collectionId
+
+            // Handle removing the public collection
+            this.#handleRemovePublicCollection(collectionId)
+            return
+          }
+
           // Check if the settings icon was clicked
           const settingsIcon = event.target.closest(".memora-settings-icon")
           if (settingsIcon) {
@@ -328,17 +349,29 @@ customElements.define(
           item.classList.add("active")
         }
 
+        // Create a container for icons
+        const iconsContainer = document.createElement("div")
+        iconsContainer.className = "memora-collection-item-icons"
+
         if (collection.isPublic) {
           // Add public badge for public collections
           item.classList.add("public")
           const badge = this.#publicBadgeTemplate.content.cloneNode(true)
           item.appendChild(badge)
+          // Add remove icon for public collections
+          if (this.#removeIconTemplate) {
+            const removeIcon = this.#removeIconTemplate.content.cloneNode(true)
+            iconsContainer.appendChild(removeIcon)
+          }
         } else {
           // Clone the settings icon from the template
           const settingsIcon =
             this.#settingsIconTemplate.content.cloneNode(true)
-          item.appendChild(settingsIcon)
+          iconsContainer.appendChild(settingsIcon)
         }
+
+        // Append the icons container to the item
+        item.appendChild(iconsContainer)
 
         this.#collectionsList.appendChild(item)
       })
@@ -602,6 +635,10 @@ customElements.define(
           collectionCreator.setAttribute("token", this.#userProfile.token)
         }
 
+        collectionCreator.addEventListener("browse-public-collections", () => {
+          this.showPublicCollections()
+        })
+
         // Set up event listeners for the component
         collectionCreator.addEventListener("collection-created", (event) => {
           // Get the collection data from the event
@@ -679,9 +716,86 @@ customElements.define(
       }
     }
 
+    /**
+     * Shows the interface for public collections
+     */
+    async showPublicCollections() {
+      this.#clearMainContent()
+      await import("../memora-public")
+
+      const publicCollectionBrowser = document.createElement("memora-public")
+      publicCollectionBrowser.setAttribute("token", this.#userProfile.token)
+
+      publicCollectionBrowser.addEventListener("add-collection", (event) => {
+        this.#collections.push(event.detail)
+        this.#renderCollections()
+      })
+
+      this.#mainContent.appendChild(publicCollectionBrowser)
+    }
+
     #updateCollections(collections) {
       this.#collections = collections
       this.#renderCollections()
+    }
+
+    /**
+     * Handles removing a public collection
+     *
+     * @param {string} collectionId - The ID of the collection to remove
+     */
+    async #handleRemovePublicCollection(collectionId) {
+      try {
+        // Get the collection data
+        const collection = this.#collections.find((c) => c.id === collectionId)
+
+        if (!collection) {
+          throw new Error("Collection not found")
+        }
+
+        console.log(
+          `Removing public collection: ${collection.name} (${collectionId})`
+        )
+        const response = await fetch(
+          `${this.#toggleCollectionURL}/${collectionId}`,
+          {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${this.#userProfile.token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        )
+        if (response.ok) {
+          // Remove from local collections array
+          this.#collections = this.#collections.filter(
+            (c) => c.id !== collectionId
+          )
+
+          console.log("Response:")
+          console.log(response)
+
+          // If the removed collection was the current one, reset it
+          if (
+            this.#currentCollection &&
+            this.#currentCollection.id === collectionId
+          ) {
+            this.#currentCollection = null
+            this.#showWelcomeScreen()
+          }
+
+          // Re-render the collections
+          this.#renderCollections()
+        } else {
+          //:TODO: Add error message
+        }
+
+        // Here you'll implement the fetch call later
+        // For now, just remove it locally
+      } catch (error) {
+        console.error("Error removing public collection:", error)
+        alert("Failed to remove the public collection. Please try again.")
+      }
     }
 
     /**
