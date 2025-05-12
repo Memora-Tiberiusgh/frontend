@@ -14,6 +14,7 @@ customElements.define(
     #collectionAPI = "http://localhost:8186/api/v1/collections"
     #token = null
     #currentEditingCardIndex = null
+    #isSubmittedToPublic = null
 
     // DOM elements
     #collectionNameInput
@@ -29,6 +30,8 @@ customElements.define(
     #editQuestionInput
     #editAnswerInput
     #editCardView
+    #makePublicBtn
+    #submissionStatusElement
 
     /**
      * Creates an instance of MemoraSettings and attaches shadow DOM
@@ -97,19 +100,26 @@ customElements.define(
       this.#editCardView = this.shadowRoot.querySelector(
         ".memora-edit-card-view"
       )
+      this.#makePublicBtn = this.shadowRoot.querySelector(
+        ".memora-button-make-public"
+      )
+
+      this.#submissionStatusElement = this.shadowRoot.querySelector(
+        ".memora-submission-status"
+      )
 
       // Set initial values if attributes were set before connection
       if (this.#collectionName) {
         this.#collectionNameInput.value = this.#collectionName
       }
 
-      this.#getDescription()
+      this.#getDescriptionAndSubmission()
 
       // Setup event listeners
       this.#setupEventListeners()
     }
 
-    async #getDescription() {
+    async #getDescriptionAndSubmission() {
       try {
         // Fetch collection's description
         const response = await fetch(
@@ -131,8 +141,16 @@ customElements.define(
 
         const data = await response.json()
         this.#descriptionInput.textContent = data.description
+        this.#isSubmittedToPublic = data.submitted
 
-        //:TODO: Implement feedback UI
+        // Update UI based on submission status
+        if (this.#isSubmittedToPublic) {
+          this.#submissionStatusElement.style.display = "flex"
+          this.#makePublicBtn.style.display = "none"
+        } else {
+          this.#submissionStatusElement.style.display = "none"
+          this.#makePublicBtn.style.display = "block"
+        }
       } catch (error) {
         // console.error(error)
       }
@@ -176,6 +194,10 @@ customElements.define(
       )
       backFromEditBtn.addEventListener("click", () =>
         this.#showGeneralSettingsView()
+      )
+
+      this.#makePublicBtn.addEventListener("click", () =>
+        this.#submitCollectionForPublication()
       )
 
       // Save edited card button
@@ -631,6 +653,36 @@ customElements.define(
 
         this.#cardsList.appendChild(cardItem)
       })
+    }
+
+    async #submitCollectionForPublication() {
+      try {
+        const response = await fetch(
+          `${this.#collectionAPI}/${this.#collectionId}/submit`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${this.#token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        )
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          const errorMessage =
+            errorData.message || "Failed to submit collection"
+          this.#showError(errorMessage)
+          return
+        }
+
+        // Update UI to show submitted state
+        this.#isSubmittedToPublic = true
+        this.#submissionStatusElement.style.display = "flex"
+        this.#makePublicBtn.style.display = "none"
+      } catch (error) {
+        // console.error(error)
+      }
     }
   }
 )
