@@ -11,8 +11,8 @@ customElements.define(
     #collections = []
     #selectedCollection = null
     #token
-    #publicCollectionURL = "http://localhost:8186/api/v1/collections/public"
-    #toggleCollectionURL = "http://localhost:8186/api/v1/users//collections"
+    #publicCollectionURL = "/api/v1/collections/public"
+    #toggleCollectionURL = "/api/v1/users//collections"
 
     /**
      * Creates an instance of the custom element and attaches a shadow DOM.
