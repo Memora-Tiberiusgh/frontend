@@ -148,8 +148,11 @@ customElements.define(
       })
 
       const finishBtn = this.shadowRoot.querySelector(".memora-button-finish")
-      //The parent component is allready informed when creating the collection and there is no need for extra logic here
-      finishBtn.addEventListener("click", () => this.remove(), { signal })
+      finishBtn.addEventListener(
+        "click",
+        () => this.dispatchEvent(new CustomEvent("collection-done")),
+        { signal }
+      )
 
       // Success step
       const doneBtn = this.shadowRoot.querySelector(".memora-button-finish")
