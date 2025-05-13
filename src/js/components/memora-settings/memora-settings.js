@@ -174,8 +174,8 @@ customElements.define(
       deleteBtn.addEventListener("click", () => this.#deleteCollection())
 
       // Cancel button
-      const cancelBtn = this.shadowRoot.querySelector(".memora-button-cancel")
-      cancelBtn.addEventListener("click", () => this.#removeSettings())
+      const doneBtn = this.shadowRoot.querySelector(".memora-button-cancel")
+      doneBtn.addEventListener("click", () => this.#removeSettings())
 
       // Add New Card button (show add card view)
       const addNewCardBtn = this.shadowRoot.querySelector(
@@ -183,8 +183,11 @@ customElements.define(
       )
       addNewCardBtn.addEventListener("click", () => this.#showAddCardView())
 
+      const finishBtn = this.shadowRoot.querySelector(".memora-button-back")
+      finishBtn.addEventListener("click", () => this.#removeSettings())
+
       // Back button (show general settings view)
-      const backBtn = this.shadowRoot.querySelector(".memora-button-back")
+      const backBtn = this.shadowRoot.querySelector(".memora-back-button")
       backBtn.addEventListener("click", () => this.#showGeneralSettingsView())
 
       // Add Card button (adds a new card)
