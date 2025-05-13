@@ -1,6 +1,9 @@
 import { htmlTemplate } from "./memora-settings.html.js"
 import { cssTemplate } from "./memora-settings.css.js"
 
+// Get the API base URL from environment variables
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ""
+
 customElements.define(
   "memora-settings",
   /**
@@ -11,8 +14,8 @@ customElements.define(
     #collectionId = null
     #cards = []
     // #flashcardsAPI = "http://localhost:8086/api/v1/flashcards"
-    #flashcardsAPI = "/api/v1/flashcards"
-    #collectionAPI = "/api/v1/collections"
+    #flashcardsAPI = `${API_BASE_URL}/api/v1/flashcards`
+    #collectionAPI = `${API_BASE_URL}/api/v1/collections`
 
     #token = null
     #currentEditingCardIndex = null

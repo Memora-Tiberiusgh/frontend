@@ -10,6 +10,7 @@ export default {
     port: 5173,
     allowedHosts: ["cscloud8-66.lnu.se"],
   },
+  envPrefix: "VITE_",
   test: {
     environment: "jsdom",
     globals: true,
