@@ -1,6 +1,9 @@
 import { htmlTemplate } from "./memora-collection.html.js"
 import { cssTemplate } from "./memora-collection.css.js"
 
+// Get the API base URL from environment variables
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ""
+
 customElements.define(
   "memora-collection",
   /**
@@ -10,9 +13,11 @@ customElements.define(
     #collectionName = ""
     #collectionId = null
     #cards = []
-    #collectionAPI = "/api/v1/collections"
-    #flashcardsAPI = "/api/v1/flashcards"
+    #collectionAPI = `${API_BASE_URL}/api/v1/collections`
+    #flashcardsAPI = `${API_BASE_URL}/api/v1/flashcards`
     #token = null
+
+    #abortController = new AbortController()
 
     // DOM elements
     #creationView
@@ -49,7 +54,7 @@ customElements.define(
      * Called when observed attributes change
      */
     attributeChangedCallback(name, oldValue, newValue) {
-      if (name === "token" && newValue) {
+      if (name === "token" && newValue != oldValue) {
         this.#token = newValue
       }
     }
@@ -58,6 +63,10 @@ customElements.define(
      * Called when element is connected to the DOM
      */
     connectedCallback() {
+      // Create a new abort controller when connected
+      this.#abortController = new AbortController()
+      const signal = this.#abortController.signal
+
       // Cache DOM elements
       this.#creationView = this.shadowRoot.querySelector(
         ".memora-creation-view"
@@ -90,7 +99,7 @@ customElements.define(
       }
 
       // Setup event listeners
-      this.#setupEventListeners()
+      this.#setupEventListeners(signal)
 
       // Focus on collection name input
       this.#collectionNameInput.focus()
@@ -99,64 +108,83 @@ customElements.define(
     /**
      * Sets up all event listeners for the component
      */
-    #setupEventListeners() {
+    #setupEventListeners(signal) {
       // Collection creation step
       const createBtn = this.shadowRoot.querySelector(".memora-button-create")
-      createBtn.addEventListener("click", () => this.#createCollection())
+      createBtn.addEventListener("click", () => this.#createCollection(), {
+        signal,
+      })
 
       const cancelBtn = this.shadowRoot.querySelector(".memora-button-cancel")
-      cancelBtn.addEventListener("click", () => this.#cancel())
+      cancelBtn.addEventListener("click", () => this.#cancel(), { signal })
 
       this.#collectionNameDisplay = this.shadowRoot.querySelector(
         ".memora-collection-name-display"
       )
 
-      this.#browseBtnn.addEventListener("click", () =>
-        this.dispatchEvent(new CustomEvent("browse-public-collections"))
+      this.#browseBtnn.addEventListener(
+        "click",
+        () => this.dispatchEvent(new CustomEvent("browse-public-collections")),
+        { signal }
       )
 
       // Allow Enter key to submit collection name
-      this.#collectionNameInput.addEventListener("keydown", (event) => {
-        if (event.key === "Enter") {
-          this.#createCollection()
-        }
-      })
+      this.#collectionNameInput.addEventListener(
+        "keydown",
+        (event) => {
+          if (event.key === "Enter") {
+            this.#createCollection()
+          }
+        },
+        { signal }
+      )
 
       // Flashcard creation step
       const addCardBtn = this.shadowRoot.querySelector(
         ".memora-button-add-card"
       )
-      addCardBtn.addEventListener("click", () => this.#addFlashcard())
+      addCardBtn.addEventListener("click", () => this.#addFlashcard(), {
+        signal,
+      })
 
       const finishBtn = this.shadowRoot.querySelector(".memora-button-finish")
       //The parent component is allready informed when creating the collection and there is no need for extra logic here
-      finishBtn.addEventListener("click", () => this.remove())
+      finishBtn.addEventListener("click", () => this.remove(), { signal })
 
       // Success step
       const doneBtn = this.shadowRoot.querySelector(".memora-button-finish")
-      doneBtn.addEventListener("click", () =>
-        this.dispatchEvent(new CustomEvent("collection-done"))
+      doneBtn.addEventListener(
+        "click",
+        () => this.dispatchEvent(new CustomEvent("collection-done")),
+        { signal }
       )
 
       // Cards list event delegation for remove buttons
-      this.#cardsList.addEventListener("click", (event) => {
-        if (event.target.closest(".memora-remove-card")) {
-          const card = event.target.closest(".memora-card-item")
-          const index = Array.from(this.#cardsList.children).indexOf(card)
-          if (index !== -1) {
-            this.#removeFlashcard(index)
+      this.#cardsList.addEventListener(
+        "click",
+        (event) => {
+          if (event.target.closest(".memora-remove-card")) {
+            const card = event.target.closest(".memora-card-item")
+            const index = Array.from(this.#cardsList.children).indexOf(card)
+            if (index !== -1) {
+              this.#removeFlashcard(index)
+            }
           }
-        }
-      })
+        },
+        { signal }
+      )
 
       // Allow Enter with Ctrl/Cmd to submit flashcard
-      this.#answerInput.addEventListener("keydown", (event) => {
-        if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
-          this.#addFlashcard()
-        }
-      })
+      this.#answerInput.addEventListener(
+        "keydown",
+        (event) => {
+          if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+            this.#addFlashcard()
+          }
+        },
+        { signal }
+      )
     }
-
     /**
      * Creates a new collection with the entered name
      */
@@ -187,6 +215,7 @@ customElements.define(
             name: collectionName,
             description: collectionDescription,
           }),
+          signal: this.#abortController.signal,
         })
 
         if (response.status === 201) {
@@ -219,9 +248,12 @@ customElements.define(
           )
         }
       } catch (error) {
-        this.#showError(
-          "An error occurred. Please check your connection and try again."
-        )
+        // Only show error if it's not an abort error
+        if (error.name !== "AbortError") {
+          this.#showError(
+            "An error occurred. Please check your connection and try again."
+          )
+        }
       }
     }
 
@@ -308,6 +340,7 @@ customElements.define(
             answer: answer,
             collectionId: this.#collectionId,
           }),
+          signal: this.#abortController.signal,
         })
 
         if (!response.ok) {
@@ -335,9 +368,12 @@ customElements.define(
         this.#answerInput.value = ""
         this.#questionInput.focus()
       } catch (error) {
-        this.#showFlashcardError(
-          "An error occurred. Please check your connection and try again."
-        )
+        // Only show error if it's not an abort error
+        if (error.name !== "AbortError") {
+          this.#showFlashcardError(
+            "An error occurred. Please check your connection and try again."
+          )
+        }
       }
     }
 
@@ -358,6 +394,7 @@ customElements.define(
                 Authorization: `Bearer ${this.#token}`,
                 "Content-Type": "application/json",
               },
+              signal: this.#abortController.signal,
             }
           )
 
@@ -372,9 +409,12 @@ customElements.define(
           this.#cards.splice(index, 1)
           this.#renderCards()
         } catch (error) {
-          this.#showFlashcardError(
-            "An error occurred while deleting the flashcard."
-          )
+          // Only show error if it's not an abort error
+          if (error.name !== "AbortError") {
+            this.#showFlashcardError(
+              "An error occurred while deleting the flashcard."
+            )
+          }
         }
       }
     }
@@ -428,6 +468,14 @@ customElements.define(
       this.dispatchEvent(event)
 
       this.remove()
+    }
+
+    /**
+     * Called when the element is disconnected from the DOM.
+     */
+    disconnectedCallback() {
+      // Abort any in-progress requests and remove event listeners
+      this.#abortController.abort()
     }
   }
 )

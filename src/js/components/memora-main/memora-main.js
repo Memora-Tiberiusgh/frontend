@@ -1,6 +1,9 @@
 import { htmlTemplate } from "./memora-main.html.js"
 import { cssTemplate } from "./memora-main.css.js"
 
+// Get the API base URL from environment variables
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ""
+
 customElements.define(
   "memora-main",
   /**
@@ -27,8 +30,8 @@ customElements.define(
     #addCollectionButton
     #removeIconTemplate
 
-    #collectionURL = "/api/v1/collections"
-    #toggleCollectionURL = "/api/v1/users/collections"
+    #collectionURL = `${API_BASE_URL}/api/v1/collections`
+    #toggleCollectionURL = `${API_BASE_URL}/api/v1/users/collections`
 
     /**
      * Creates an instance of the custom element and attaches a shadow DOM.
@@ -62,20 +65,63 @@ customElements.define(
       if (newValue !== oldValue && name === "user-data") {
         try {
           this.userProfile = JSON.parse(newValue)
-        } catch (e) {
-          //:TODO: Add logger
+        } catch (error) {
+          console.error(error)
         }
       }
     }
 
     /**
      * Setter for user profile data
+     * @param {null} data
      */
     set userProfile(data) {
       this.#userProfile = data
       if (this.isConnected) {
         this.#updateUserProfile()
         this.#fetchUserCollection()
+      }
+    }
+
+    #handleCollectionItemClick(event) {
+      // Handle remove icon click
+      const removeIcon = event.target.closest(".memora-remove-icon")
+      if (removeIcon) {
+        event.stopPropagation()
+        const collectionItem = removeIcon.closest(".memora-collection-item")
+        const collectionId = collectionItem.dataset.collectionId
+        this.#handleRemovePublicCollection(collectionId)
+        return
+      }
+
+      // Handle settings icon click
+      const settingsIcon = event.target.closest(".memora-settings-icon")
+      if (settingsIcon) {
+        event.stopPropagation()
+        const collectionItem = settingsIcon.closest(".memora-collection-item")
+        const collectionId = collectionItem.dataset.collectionId
+        this.#handleSettingsIconClick(collectionId)
+        return
+      }
+
+      // Handle collection item click
+      const collectionItem = event.target.closest(".memora-collection-item")
+      if (collectionItem) {
+        const collectionId = collectionItem.dataset.collectionId
+        const collection = this.#collections.find((c) => c.id === collectionId)
+        if (collection) {
+          this.#selectCollection(collection)
+        }
+      }
+    }
+
+    // Helper method for settings icon click handling
+    #handleSettingsIconClick(collectionId) {
+      const collection = this.#collections.find((c) => c.id === collectionId)
+      if (collection) {
+        this.#currentCollection = collection
+        this.#updateCollectionActiveState(collection)
+        this.#showSettingsComponent(collection.id)
       }
     }
 
@@ -203,73 +249,7 @@ customElements.define(
       // Add delegated event listener for collection items
       this.#collectionsList.addEventListener(
         "click",
-        (event) => {
-          // Check if the remove icon was clicked
-          const removeIcon = event.target.closest(".memora-remove-icon")
-          if (removeIcon) {
-            // Stop the event from triggering collection selection
-            event.stopPropagation()
-
-            // Find the collection item and collection data
-            const collectionItem = removeIcon.closest(".memora-collection-item")
-            const collectionId = collectionItem.dataset.collectionId
-
-            // Handle removing the public collection
-            this.#handleRemovePublicCollection(collectionId)
-            return
-          }
-
-          // Check if the settings icon was clicked
-          const settingsIcon = event.target.closest(".memora-settings-icon")
-          if (settingsIcon) {
-            // Stop the event from triggering collection selection
-            event.stopPropagation()
-
-            // Find the collection item and collection data
-            const collectionItem = settingsIcon.closest(
-              ".memora-collection-item"
-            )
-            const collectionId = collectionItem.dataset.collectionId
-
-            // Find the collection in the data
-            const collection = this.#collections.find(
-              (c) => c.id === collectionId
-            )
-
-            if (collection) {
-              // Update the current collection
-              this.#currentCollection = collection
-
-              // Remove "active" class from all collection items
-              const collectionItems = this.shadowRoot.querySelectorAll(
-                ".memora-collection-item"
-              )
-              collectionItems.forEach((item) => {
-                item.classList.remove("active")
-              })
-
-              // Add active class only to the clicked collection
-              collectionItem.classList.add("active")
-
-              // Show the settings for this collection, but don't fetch cards
-              this.#showSettingsComponent(collection.id)
-            }
-
-            return
-          }
-
-          const collectionItem = event.target.closest(".memora-collection-item")
-          if (collectionItem) {
-            const collectionId = collectionItem.dataset.collectionId
-            const collection = this.#collections.find(
-              (c) => c.id === collectionId
-            )
-
-            if (collection) {
-              this.#selectCollection(collection)
-            }
-          }
-        },
+        (event) => this.#handleCollectionItemClick(event),
         { signal }
       )
 
@@ -598,12 +578,10 @@ customElements.define(
         // Hide loading message when done
         this.#loadingMessage.style.display = "none"
       } catch (error) {
-        //:TODO: Add logger
-
-        // Show error message
-        this.#loadingMessage.style.display = "none"
-        this.#errorMessage.textContent = `Error loading collections. Most probably a server is down.`
-        this.#errorMessage.style.display = "block"
+        this.#handleApiError(
+          error,
+          "Error loading collections. Most probably a server is down."
+        )
       }
     }
 
@@ -753,9 +731,6 @@ customElements.define(
           throw new Error("Collection not found")
         }
 
-        console.log(
-          `Removing public collection: ${collection.name} (${collectionId})`
-        )
         const response = await fetch(
           `${this.#toggleCollectionURL}/${collectionId}`,
           {
@@ -771,9 +746,6 @@ customElements.define(
           this.#collections = this.#collections.filter(
             (c) => c.id !== collectionId
           )
-
-          console.log("Response:")
-          console.log(response)
 
           // If the removed collection was the current one, reset it
           if (
@@ -793,8 +765,28 @@ customElements.define(
         // Here you'll implement the fetch call later
         // For now, just remove it locally
       } catch (error) {
-        console.error("Error removing public collection:", error)
-        alert("Failed to remove the public collection. Please try again.")
+        this.#handleApiError(
+          error,
+          "Failed to remove the public collection. Please try again.",
+          true
+        )
+      }
+    }
+
+    /**
+     * Handles API errors consistently
+     * @param {Error} error - The error that occurred
+     * @param {string} message - User-friendly message to display
+     * @param {boolean} showAlert - Whether to show an alert in addition to UI message
+     */
+    #handleApiError(error, message, showAlert = false) {
+      // console.error(error)
+      this.#loadingMessage.style.display = "none"
+      this.#errorMessage.textContent = message
+      this.#errorMessage.style.display = "block"
+
+      if (showAlert) {
+        alert(message)
       }
     }
 
@@ -805,7 +797,12 @@ customElements.define(
       // Abort all event listeners at once
       if (this.#abortController) {
         this.#abortController.abort()
+        this.#abortController = null
       }
+
+      // Clear any references that could cause memory leaks
+      this.#currentCollection = null
+      this.#collections = []
     }
   }
 )
