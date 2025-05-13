@@ -70,8 +70,8 @@ htmlTemplate.innerHTML = `
           <p class="memora-error-message" style="display: none;"></p>
           
           <div class="memora-buttons">
-            <button class="memora-button memora-button-add-card">Add Card</button>
-            <button class="memora-button memora-button-primary memora-button-finish">Finish</button>
+            <button class="memora-button memora-button-finish">Finish</button>
+            <button class="memora-button memora-button-primary memora-button-add-card">Add Card</button>
           </div>
         </div>
         
