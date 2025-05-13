@@ -149,8 +149,11 @@ cssTemplate.innerHTML = `
         align-items: center;
         justify-content: center;
         user-select: none;
+        overflow-y: auto;
+        height: 100%;
+        position: relative;
     }
-
+    
     .memora-welcome-screen {
         cursor: default;
     }

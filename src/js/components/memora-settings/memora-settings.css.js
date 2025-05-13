@@ -3,7 +3,7 @@
  * @module memora-settings.css
  */
 // Define the CSS template.
-export const cssTemplate = document.createElement("template")
+export const cssTemplate = document.createElement("template");
 cssTemplate.innerHTML = `
 <style>
     :host {
@@ -430,6 +430,52 @@ cssTemplate.innerHTML = `
         line-height: 1.5;
     }
 
+    /* Breadcrumb navigation styles */
+    .memora-breadcrumb-nav {
+        margin-bottom: 16px;
+    }
+
+    .memora-back-button {
+        display: flex;
+        align-items: center;
+        background: none;
+        border: none;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-dark);
+        cursor: pointer;
+        padding: 8px 12px;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+
+    .memora-back-button:hover {
+        background-color: rgba(99, 102, 241, 0.08);
+        color: var(--primary);
+    }
+
+    .memora-back-button:focus {
+        outline: 2px solid var(--primary);
+        outline-offset: 2px;
+    }
+
+    .memora-back-icon {
+        font-size: 1.125rem;
+        margin-right: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .memora-back-text {
+        font-weight: 500;
+    }
+
+    /* Breadcrumb specific styles */
+    .memora-breadcrumb-style {
+        padding: 4px 8px;
+    }
+
     /* Enhanced error message styles */
     .memora-error-message {
         color: var(--error);
@@ -497,4 +543,4 @@ cssTemplate.innerHTML = `
         }
     }
 </style>
-`
+`;

@@ -1,6 +1,9 @@
 import { htmlTemplate } from "./memora-public.html.js"
 import { cssTemplate } from "./memora-public.css.js"
 
+// Get the API base URL from environment variables
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ""
+
 customElements.define(
   "memora-public",
   /**
@@ -11,8 +14,8 @@ customElements.define(
     #collections = []
     #selectedCollection = null
     #token
-    #publicCollectionURL = "/api/v1/collections/public"
-    #toggleCollectionURL = "/api/v1/users//collections"
+    #publicCollectionURL = `${API_BASE_URL}/api/v1/collections/public`
+    #toggleCollectionURL = `${API_BASE_URL}/api/v1/users//collections`
 
     /**
      * Creates an instance of the custom element and attaches a shadow DOM.
