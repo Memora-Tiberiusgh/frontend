@@ -2,6 +2,10 @@ import { htmlTemplate } from "./memora-app.html.js"
 import { cssTemplate } from "./memora-app.css.js"
 import { auth } from "../../services/firebase.js"
 
+// Get the API base URL from environment variables
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ""
+console.log("API Base URL:", API_BASE_URL)
+
 customElements.define(
   "memora-app",
   /**
@@ -9,7 +13,7 @@ customElements.define(
    */
   class extends HTMLElement {
     #container
-    #userCreateURL = "/api/v1/users"
+    #userCreateURL = `${API_BASE_URL}/api/v1/users`
 
     /**
      * Creates an instance of the custom element and attaches a shadow DOM.
@@ -83,7 +87,7 @@ customElements.define(
                   }),
                 })
               } catch (fetchError) {
-                // console.error("Fetch error:", fetchError)
+                console.error("Fetch error:", fetchError)
               }
 
               // Process response in its own try block

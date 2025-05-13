@@ -1,6 +1,9 @@
 import { htmlTemplate } from "./memora-review.html.js"
 import { cssTemplate } from "./memora-review.css.js"
 
+// Get the API base URL from environment variables
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ""
+
 customElements.define(
   "memora-review",
   /**
@@ -22,7 +25,7 @@ customElements.define(
     #nextButton
     #revealButton
 
-    #collectionURL = "/api/v1/flashcards/collections"
+    #collectionURL = `${API_BASE_URL}/api/v1/flashcards/collections`
 
     /**
      * Creates an instance of the custom element and attaches a shadow DOM.
