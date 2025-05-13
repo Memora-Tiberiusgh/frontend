@@ -86,13 +86,13 @@ cssTemplate.innerHTML = `
 
     .memora-collection-item {
         padding: 12px 15px;
-    margin-bottom: 8px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+        margin-bottom: 8px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
     }
 
     .memora-collection-item:hover {
@@ -153,7 +153,7 @@ cssTemplate.innerHTML = `
         height: 100%;
         position: relative;
     }
-    
+
     .memora-welcome-screen {
         cursor: default;
     }
@@ -272,10 +272,10 @@ cssTemplate.innerHTML = `
 
     .memora-collection-name-text {
         flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    margin-right: 8px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin-right: 8px;
     }
 
     .memora-settings-icon {
@@ -312,73 +312,133 @@ cssTemplate.innerHTML = `
         transform: rotate(45deg);
     }
 
-/* Position the public badge for animation */
-.memora-collection-item.public {
-    position: relative;
-    overflow: hidden; /* Ensure the transition doesn't cause overflow */
-}
+    /* Position the public badge for animation */
+    .memora-collection-item.public {
+        position: relative;
+        overflow: hidden; /* Ensure the transition doesn't cause overflow */
+    }
 
-/* Style the public badge with transition */
-.memora-public-badge {
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    background-color: var(--secondary);
-    color: white;
-    font-size: 0.7rem;
-    padding: 3px 8px;
-    border-radius: 12px;
-    transition: transform 0.3s ease;
-}
+    /* Style the public badge with transition */
+    .memora-public-badge {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background-color: var(--secondary);
+        color: white;
+        font-size: 0.7rem;
+        padding: 3px 8px;
+        border-radius: 12px;
+        transition: transform 0.3s ease;
+    }
 
-/* Style the remove icon (initially off-screen to the right) */
-.memora-remove-icon {
-    position: absolute;
-    right: -25px; /* Start off-screen */
-    top: 50%;
-    transform: translateY(-50%);
-    color: #e53935; /* Red color for delete action */
-    cursor: pointer;
-    transition: right 0.3s ease, transform 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    height: 20px;
-}
+    /* Style the remove icon (initially off-screen to the right) */
+    .memora-remove-icon {
+        position: absolute;
+        right: -25px; /* Start off-screen */
+        top: 50%;
+        transform: translateY(-50%);
+        color: #e53935; /* Red color for delete action */
+        cursor: pointer;
+        transition: right 0.3s ease, transform 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+    }
 
-/* On hover, slide the badge left and bring in the remove icon */
-.memora-collection-item.public:hover .memora-public-badge {
-    transform: translateY(-50%) translateX(-30px); /* Move left to make space */
-}
+    /* On hover, slide the badge left and bring in the remove icon */
+    .memora-collection-item.public:hover .memora-public-badge {
+        transform: translateY(-50%) translateX(-30px); /* Move left to make space */
+    }
 
-.memora-collection-item.public:hover .memora-remove-icon {
-    right: 15px; /* Move into view */
-}
+    .memora-collection-item.public:hover .memora-remove-icon {
+        right: 15px; /* Move into view */
+    }
 
-/* Add a scale effect on hover for the remove icon */
-.memora-remove-icon:hover {
-    transform: translateY(-50%) scale(1.2);
-}
+    /* Add a scale effect on hover for the remove icon */
+    .memora-remove-icon:hover {
+        transform: translateY(-50%) scale(1.2);
+    }
 
-/* Ensure the icon is white when collection is active */
-.memora-collection-item.active .memora-remove-icon {
-    color: white;
-}
+    /* Ensure the icon is white when collection is active */
+    .memora-collection-item.active .memora-remove-icon {
+        color: white;
+    }
 
     /* Responsive styles */
     @media (max-width: 992px) {
         .memora-app {
             flex-direction: column;
+            height: auto;
+            min-height: 100vh;
         }
 
         .memora-sidebar {
             width: 100%;
             height: auto;
-            max-height: 300px;
+            max-height: none;
             border-right: none;
             border-bottom: 1px solid var(--gray-light);
+            /* Keep the user profile in the sidebar on mobile, but move to the bottom of the page */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Move user profile out of the sidebar's normal flow */
+        .memora-sidebar .memora-user-profile {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: white;
+            z-index: 10;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .memora-main-content {
+            min-height: 50vh; /* Ensure main content has adequate height */
+            /* Add padding at the bottom for the fixed user profile */
+            padding-bottom: 70px;
+        }
+
+        /* Adjust collections list for mobile */
+        .memora-collections-list {
+            max-height: none;
+            overflow-y: auto;
+        }
+
+        /* Enhance tap targets for mobile */
+        .memora-collection-item {
+            padding: 14px 15px;
+            margin-bottom: 10px;
+        }
+
+        /* Make settings icon always visible on mobile for better UX */
+        .memora-collection-item .memora-settings-icon {
+            display: block;
+        }
+
+        /* Add space at the bottom of the sidebar to compensate for fixed user profile */
+        .memora-add-collection-btn {
+            margin-bottom: 70px;
+        }
+    }
+
+    /* For very small screens */
+    @media (max-width: 576px) {
+        .memora-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .memora-logo {
+            margin-bottom: 10px;
+        }
+
+        .memora-social-icons {
+            margin-bottom: 10px;
         }
     }
 </style>
