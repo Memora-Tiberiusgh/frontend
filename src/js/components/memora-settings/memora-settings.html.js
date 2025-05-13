@@ -65,8 +65,15 @@ htmlTemplate.innerHTML = `
         
         <!-- Add card view (initially hidden) -->
         <div class="memora-view memora-add-card-view" style="display: none;">
-          <h2 class="memora-section-title">Add New Cards</h2>
-          
+          <div class="memora-breadcrumb-nav">
+            <button class="memora-back-button memora-breadcrumb-style">
+            <span class="memora-back-icon">←</span>
+            <span class="memora-back-text">Back to Settings</span>
+          </button>
+        </div>  
+
+        <h2 class="memora-section-title">Add New Cards</h2>
+        
           <div class="memora-flashcard-inputs-vertical">
             <div class="memora-input-group">
               <label for="flashcard-question">Question</label>
@@ -85,7 +92,7 @@ htmlTemplate.innerHTML = `
           <p class="memora-error-message" style="display: none;"></p>
           
           <div class="memora-buttons">
-            <button class="memora-button memora-button-back">Back to Settings</button>
+            <button class="memora-button memora-button-back">Finish</button>
             <button class="memora-button memora-button-primary memora-button-add-card">Add Card</button>
           </div>
         </div>
