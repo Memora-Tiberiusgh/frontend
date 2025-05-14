@@ -719,5 +719,13 @@ customElements.define(
         this.#showErrorState("Error loading flashcards")
       }
     }
+
+    /**
+     * Called when the element is disconnected from the DOM.
+     */
+    disconnectedCallback() {
+      // Abort any in-progress requests and remove event listeners
+      this.#abortController.abort()
+    }
   }
 )
