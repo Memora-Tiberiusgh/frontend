@@ -16,6 +16,9 @@ cssTemplate.innerHTML = `
         --background: #f9fafb;
         --gray-light: #e5e7eb;
         --gray: #9ca3af;
+        display: block;
+        width: 100%;
+        max-width: 100%;
     }
 
     /* Reset */
@@ -39,6 +42,7 @@ cssTemplate.innerHTML = `
         justify-content: center;
         width: 100%;
         animation: fade-in 0.3s ease-in-out;
+        padding: 0 15px;
     }
 
     @keyframes fade-in {
@@ -50,6 +54,7 @@ cssTemplate.innerHTML = `
         text-align: center;
         margin-bottom: 40px;
         cursor: default;
+        width: 100%;
     }
 
     .memora-collection-name {
@@ -77,6 +82,7 @@ cssTemplate.innerHTML = `
         display: flex;
         flex-direction: column;
         height: 520px;
+        width: 100%;
     }
 
     .memora-flashcard-body {
@@ -313,6 +319,7 @@ cssTemplate.innerHTML = `
         align-items: center;
         width: 100%;
         animation: fade-in 0.3s ease;
+        padding: 0 15px;
     }
 
     .memora-summary-view.active {
@@ -441,6 +448,13 @@ cssTemplate.innerHTML = `
         .memora-flashcard {
             min-height: 400px;
             max-height: 480px;
+            width: 100%;
+            margin: 0 auto 30px auto;
+        }
+        
+        .memora-flashcard-container {
+            width: 100%;
+            max-width: 100%;
         }
         
         .memora-flashcard-footer {
@@ -452,6 +466,7 @@ cssTemplate.innerHTML = `
         .memora-controls-center,
         .memora-controls-right {
             justify-content: center;
+            width: 100%;
         }
         
         .memora-navigation-button,
@@ -460,6 +475,21 @@ cssTemplate.innerHTML = `
         }
 
         .memora-summary-container {
+            padding: 16px;
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+        
+        .memora-collection-name {
+            font-size: 1.5rem;
+        }
+        
+        .memora-summary-title {
+            font-size: 1.3rem;
+        }
+        
+        .memora-flashcard-body {
             padding: 20px;
         }
     }
