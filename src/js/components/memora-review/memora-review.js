@@ -213,7 +213,7 @@ customElements.define(
       if (this.#backButton) {
         this.#backButton.addEventListener(
           "click",
-          () => this.#hideSummaryView(),
+          (event) => this.#hideSummaryView(event),
           { signal }
         )
       }
@@ -323,7 +323,12 @@ customElements.define(
     /**
      * Hides the summary view
      */
-    #hideSummaryView() {
+    #hideSummaryView(event) {
+      // Prevent default behavior if it's an event
+      if (event) {
+        event.preventDefault()
+      }
+
       if (this.#flashcardView && this.#summaryView) {
         this.#flashcardView.classList.remove("hidden")
         this.#summaryView.classList.remove("active")
