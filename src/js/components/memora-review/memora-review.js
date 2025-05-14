@@ -202,8 +202,8 @@ customElements.define(
      * Updates the flashcard view with the current collection and card
      */
     #updateFlashcardView() {
-      // Check if collection exists and has cards
-      if (!this.#collection || !this.#collection.cards?.length) {
+      // Check if collection exists and has flashcards
+      if (!this.#collection || !this.#collection.flashcards?.length) {
         this.#showEmptyState()
         return
       }
@@ -220,7 +220,7 @@ customElements.define(
       if (this.#collectionMeta) {
         this.#collectionMeta.textContent = `Card ${
           this.#currentCardIndex + 1
-        } of ${this.#collection.cards.length}`
+        } of ${this.#collection.flashcards.length}`
       }
 
       // Reset answer state
@@ -230,7 +230,7 @@ customElements.define(
       }
 
       // Get current card
-      const currentCard = this.#collection.cards[this.#currentCardIndex]
+      const currentCard = this.#collection.flashcards[this.#currentCardIndex]
 
       // Immediately update question but delay answer update until after transition
       if (this.#flashcardQuestion) {
@@ -271,7 +271,7 @@ customElements.define(
 
       if (this.#nextButton) {
         this.#nextButton.disabled =
-          this.#currentCardIndex === this.#collection.cards.length - 1
+          this.#currentCardIndex === this.#collection.flashcards.length - 1
       }
 
       // Apply transitions for smooth animation
@@ -346,11 +346,11 @@ customElements.define(
     }
 
     /**
-     * Navigates between cards
+     * Navigates between flashcards
      */
     #navigateCards(direction) {
-      // Check if collection and cards exist
-      if (!this.#collection?.cards?.length) {
+      // Check if collection and flashcards exist
+      if (!this.#collection?.flashcards?.length) {
         return
       }
 
@@ -358,7 +358,7 @@ customElements.define(
       const newIndex = this.#currentCardIndex + direction
 
       // Check if within bounds
-      if (newIndex >= 0 && newIndex < this.#collection.cards.length) {
+      if (newIndex >= 0 && newIndex < this.#collection.flashcards.length) {
         this.#currentCardIndex = newIndex
 
         // Always hide the answer when navigating to a new card
@@ -417,18 +417,13 @@ customElements.define(
           throw new Error(`API error: ${response.status}`)
         }
 
-        const data = await response.json()
-
-        // Process the flashcards data structure based on the API response
-        this.#collection = {
-          cards: data.flashcards || [],
-        }
+        this.#collection = await response.json()
 
         // Reset to first card
         this.#currentCardIndex = 0
 
         // Update the view
-        if (this.#collection.cards.length > 0) {
+        if (this.#collection.flashcards.length > 0) {
           this.#updateFlashcardView()
         } else {
           this.#showEmptyState()
