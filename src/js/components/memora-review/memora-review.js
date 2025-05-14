@@ -14,6 +14,9 @@ customElements.define(
     #currentCardIndex = 0
     #abortController = null
     #isAnswerRevealed = false
+    #bookmarkedCards = []
+    #randomMode = false
+    #seenCards = []
 
     #flashcardView
     #collectionName
@@ -24,6 +27,13 @@ customElements.define(
     #prevButton
     #nextButton
     #revealButton
+    #randomButton
+    #bookmarkButton
+    #summaryButton
+    #summaryView
+    #backButton
+    #bookmarkedList
+    #bookmarkedCount
 
     #collectionURL = `${API_BASE_URL}/api/v1/flashcards/collections`
 
@@ -105,6 +115,24 @@ customElements.define(
         ".memora-reveal-button"
       )
 
+      this.#randomButton = this.shadowRoot.querySelector(
+        ".memora-corner-button.random"
+      )
+      this.#bookmarkButton = this.shadowRoot.querySelector(
+        ".memora-corner-button.bookmark"
+      )
+      this.#summaryButton = this.shadowRoot.querySelector(
+        ".memora-corner-button.summary"
+      )
+      this.#summaryView = this.shadowRoot.querySelector(".memora-summary-view")
+      this.#backButton = this.shadowRoot.querySelector(".memora-back-button")
+      this.#bookmarkedList = this.shadowRoot.querySelector(
+        ".memora-bookmarked-list"
+      )
+      this.#bookmarkedCount = this.shadowRoot.querySelector(
+        ".memora-bookmarked-count"
+      )
+
       // Set up event listeners
       this.#setupEventListeners()
 
@@ -157,6 +185,203 @@ customElements.define(
           { signal }
         )
       }
+
+      if (this.#randomButton) {
+        this.#randomButton.addEventListener(
+          "click",
+          () => this.#toggleRandomMode(),
+          { signal }
+        )
+      }
+
+      if (this.#bookmarkButton) {
+        this.#bookmarkButton.addEventListener(
+          "click",
+          () => this.#toggleBookmark(),
+          { signal }
+        )
+      }
+
+      if (this.#summaryButton) {
+        this.#summaryButton.addEventListener(
+          "click",
+          () => this.#showSummaryView(),
+          { signal }
+        )
+      }
+
+      if (this.#backButton) {
+        this.#backButton.addEventListener(
+          "click",
+          () => this.#hideSummaryView(),
+          { signal }
+        )
+      }
+    }
+
+    /**
+     * Toggles random mode on/off
+     */
+    #toggleRandomMode() {
+      if (!this.#collection || !this.#collection.flashcards?.length) {
+        return
+      }
+
+      this.#randomMode = !this.#randomMode
+
+      if (this.#randomMode) {
+        // Activate random mode - add the active class to show it's on
+        this.#randomButton.classList.add("active")
+
+        // Add current card to seen cards if not already there
+        if (!this.#seenCards.includes(this.#currentCardIndex)) {
+          this.#seenCards.push(this.#currentCardIndex)
+        }
+
+        // Check if all cards have been seen
+        if (this.#seenCards.length === this.#collection.flashcards.length) {
+          // All cards seen, disable next button
+          if (this.#nextButton) {
+            this.#nextButton.disabled = true
+          }
+        } else {
+          // Not all cards seen, enable next button
+          if (this.#nextButton) {
+            this.#nextButton.disabled = false
+          }
+        }
+      } else {
+        // Deactivate random mode - remove the active class
+        this.#randomButton.classList.remove("active")
+
+        // Reset next button state based on current position
+        if (this.#nextButton) {
+          this.#nextButton.disabled =
+            this.#currentCardIndex === this.#collection.flashcards.length - 1
+        }
+      }
+    }
+
+    /**
+     * Finds the next unseen card in random mode
+     * @returns {number} The index of the next unseen card, or -1 if all cards have been seen
+     */
+    #findNextRandomCard() {
+      const totalCards = this.#collection.flashcards.length
+
+      // If all cards have been seen, return -1
+      if (this.#seenCards.length >= totalCards) {
+        return -1
+      }
+
+      // Pick random indices until we find one that hasn't been seen
+      let randomIndex
+      do {
+        randomIndex = Math.floor(Math.random() * totalCards)
+      } while (this.#seenCards.includes(randomIndex))
+
+      return randomIndex
+    }
+
+    /**
+     * Toggles bookmark for current card
+     */
+    #toggleBookmark() {
+      if (!this.#collection || !this.#collection.flashcards?.length) {
+        return
+      }
+
+      const cardIndex = this.#currentCardIndex
+
+      // Check if card is already bookmarked
+      const bookmarkIndex = this.#bookmarkedCards.indexOf(cardIndex)
+
+      if (bookmarkIndex === -1) {
+        // Add to bookmarks
+        this.#bookmarkedCards.push(cardIndex)
+        this.#bookmarkButton.classList.add("active")
+      } else {
+        // Remove from bookmarks
+        this.#bookmarkedCards.splice(bookmarkIndex, 1)
+        this.#bookmarkButton.classList.remove("active")
+      }
+    }
+
+    /**
+     * Shows the summary view
+     */
+    #showSummaryView() {
+      if (this.#flashcardView && this.#summaryView) {
+        this.#flashcardView.classList.add("hidden")
+        this.#summaryView.classList.add("active")
+
+        // Render bookmarked cards
+        this.#renderBookmarkedCards()
+      }
+    }
+
+    /**
+     * Hides the summary view
+     */
+    #hideSummaryView() {
+      if (this.#flashcardView && this.#summaryView) {
+        this.#flashcardView.classList.remove("hidden")
+        this.#summaryView.classList.remove("active")
+      }
+    }
+
+    /**
+     * Renders bookmarked cards in the summary view
+     */
+    #renderBookmarkedCards() {
+      if (!this.#bookmarkedList) return
+
+      // Clear existing cards
+      while (this.#bookmarkedList.firstChild) {
+        this.#bookmarkedList.removeChild(this.#bookmarkedList.firstChild)
+      }
+
+      // Update the bookmarked count
+      if (this.#bookmarkedCount) {
+        this.#bookmarkedCount.textContent = this.#bookmarkedCards.length
+      }
+
+      // If no bookmarked cards, show empty message
+      if (this.#bookmarkedCards.length === 0) {
+        const emptyMessage = document.createElement("div")
+        emptyMessage.className = "memora-empty-bookmarks"
+        emptyMessage.textContent = "No bookmarked flashcards yet"
+        this.#bookmarkedList.appendChild(emptyMessage)
+        return
+      }
+
+      // Add each bookmarked card to the list
+      this.#bookmarkedCards.forEach((index) => {
+        if (index >= 0 && index < this.#collection.flashcards.length) {
+          const card = this.#collection.flashcards[index]
+
+          // Create card element
+          const cardElement = document.createElement("div")
+          cardElement.className = "memora-bookmarked-card"
+
+          // Create question element
+          const questionElement = document.createElement("div")
+          questionElement.className = "memora-bookmarked-question"
+          questionElement.textContent = card.question
+
+          // Create answer element
+          const answerElement = document.createElement("div")
+          answerElement.className = "memora-bookmarked-answer"
+          answerElement.textContent = card.answer
+
+          // Add to card
+          cardElement.appendChild(questionElement)
+          cardElement.appendChild(answerElement)
+
+          // Add to list
+          this.#bookmarkedList.appendChild(cardElement)
+        }
+      })
     }
 
     /**
@@ -270,8 +495,24 @@ customElements.define(
       }
 
       if (this.#nextButton) {
-        this.#nextButton.disabled =
-          this.#currentCardIndex === this.#collection.flashcards.length - 1
+        if (this.#randomMode) {
+          // In random mode, disable if all cards have been seen
+          this.#nextButton.disabled =
+            this.#seenCards.length >= this.#collection.flashcards.length
+        } else {
+          // In sequential mode, disable if at the end
+          this.#nextButton.disabled =
+            this.#currentCardIndex === this.#collection.flashcards.length - 1
+        }
+      }
+
+      // Update bookmark button state
+      if (this.#bookmarkButton) {
+        if (this.#bookmarkedCards.includes(this.#currentCardIndex)) {
+          this.#bookmarkButton.classList.add("active")
+        } else {
+          this.#bookmarkButton.classList.remove("active")
+        }
       }
 
       // Apply transitions for smooth animation
@@ -354,26 +595,56 @@ customElements.define(
         return
       }
 
-      // Calculate new index
-      const newIndex = this.#currentCardIndex + direction
+      // Handle random mode for forward navigation
+      if (this.#randomMode && direction > 0) {
+        const nextRandomIndex = this.#findNextRandomCard()
 
-      // Check if within bounds
-      if (newIndex >= 0 && newIndex < this.#collection.flashcards.length) {
+        if (nextRandomIndex !== -1) {
+          // Move to the next random card
+          this.#currentCardIndex = nextRandomIndex
+
+          // Add to seen cards
+          this.#seenCards.push(nextRandomIndex)
+
+          // Check if all cards have been seen
+          if (this.#seenCards.length === this.#collection.flashcards.length) {
+            // All cards seen, disable next button
+            if (this.#nextButton) {
+              this.#nextButton.disabled = true
+            }
+          }
+        } else {
+          // All cards seen, don't navigate
+          return
+        }
+      } else {
+        // Standard sequential navigation
+        const newIndex = this.#currentCardIndex + direction
+
+        // Check if within bounds
+        if (newIndex < 0 || newIndex >= this.#collection.flashcards.length) {
+          return
+        }
+
         this.#currentCardIndex = newIndex
 
-        // Always hide the answer when navigating to a new card
-        this.#isAnswerRevealed = false
-        if (this.#answerContainer) {
-          this.#answerContainer.classList.remove("revealed")
+        // Add to seen cards if not already there
+        if (!this.#seenCards.includes(newIndex)) {
+          this.#seenCards.push(newIndex)
         }
-        if (this.#revealButton) {
-          this.#revealButton.textContent = "Reveal Answer"
-        }
-
-        this.#updateFlashcardView()
       }
-    }
 
+      // Always hide the answer when navigating to a new card
+      this.#isAnswerRevealed = false
+      if (this.#answerContainer) {
+        this.#answerContainer.classList.remove("revealed")
+      }
+      if (this.#revealButton) {
+        this.#revealButton.textContent = "Reveal Answer"
+      }
+
+      this.#updateFlashcardView()
+    }
     /**
      * Fetches cards for a specific collection
      *
@@ -419,8 +690,16 @@ customElements.define(
 
         this.#collection = await response.json()
 
-        // Reset to first card
+        // Reset state
         this.#currentCardIndex = 0
+        this.#randomMode = false
+        this.#seenCards = []
+        this.#bookmarkedCards = []
+
+        // Reset UI state
+        if (this.#randomButton) {
+          this.#randomButton.classList.remove("active")
+        }
 
         // Update the view
         if (this.#collection.flashcards.length > 0) {
@@ -429,20 +708,10 @@ customElements.define(
           this.#showEmptyState()
         }
       } catch (error) {
-        console.error("Error fetching flashcards:", error)
+        // console.error("Error fetching flashcards:", error)
 
         // Show error state
         this.#showErrorState("Error loading flashcards")
-      }
-    }
-
-    /**
-     * Called when the element is disconnected from the DOM.
-     */
-    disconnectedCallback() {
-      // Abort all event listeners at once
-      if (this.#abortController) {
-        this.#abortController.abort()
       }
     }
   }
