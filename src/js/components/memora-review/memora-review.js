@@ -698,7 +698,7 @@ customElements.define(
         // Reset state
         this.#currentCardIndex = 0
         this.#randomMode = false
-        this.#seenCards = []
+        this.#seenCards = [0]
         this.#bookmarkedCards = []
 
         // Reset UI state
