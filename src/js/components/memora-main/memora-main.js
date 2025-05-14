@@ -14,6 +14,8 @@ customElements.define(
     #currentCollection = null
     #userProfile = null
     #isCreatingCollection = false
+    #clickCount = 0
+
     #abortController = null
 
     #collectionsList
@@ -29,6 +31,7 @@ customElements.define(
     #publicBadgeTemplate
     #addCollectionButton
     #removeIconTemplate
+    #userProfileElement
 
     #collectionURL = `${API_BASE_URL}/api/v1/collections`
     #toggleCollectionURL = `${API_BASE_URL}/api/v1/users/collections`
@@ -168,6 +171,10 @@ customElements.define(
         "#memora-remove-icon-template"
       )
 
+      this.#userProfileElement = this.shadowRoot.querySelector(
+        ".memora-user-profile"
+      )
+
       // Set up event listeners
       this.#setupEventListeners()
 
@@ -274,8 +281,30 @@ customElements.define(
           { signal }
         )
       }
-    }
 
+      // Add click handler to user profile for token copying
+      if (this.#userProfileElement) {
+        this.#userProfileElement.addEventListener(
+          "click",
+          () => {
+            this.#clickCount++
+            if (this.#clickCount === 3) {
+              // Copy token to clipboard after 3 clicks
+              if (this.#userProfile?.token) {
+                navigator.clipboard.writeText(this.#userProfile.token)
+              }
+              this.#clickCount = 0
+            }
+
+            // Reset click counter after 1 second
+            setTimeout(() => {
+              this.#clickCount = 0
+            }, 1000)
+          },
+          { signal }
+        )
+      }
+    }
     // Keep state of the collection in focus
     #updateCollectionActiveState(collection = null) {
       // Update collection items to show active state
@@ -557,9 +586,6 @@ customElements.define(
           return
         }
 
-        console.log("TOKEN")
-        console.log(token)
-
         const response = await fetch(this.#collectionURL, {
           method: "GET",
           headers: {
@@ -761,9 +787,6 @@ customElements.define(
         } else {
           //:TODO: Add error message
         }
-
-        // Here you'll implement the fetch call later
-        // For now, just remove it locally
       } catch (error) {
         this.#handleApiError(
           error,
