@@ -57,6 +57,14 @@ cssTemplate.innerHTML = `
         width: 100%;
     }
 
+    .memora-content-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        max-width: 600px;
+    }
+
     .memora-collection-name {
         font-size: 2rem;
         font-weight: bold;
@@ -70,7 +78,6 @@ cssTemplate.innerHTML = `
 
     .memora-flashcard-container {
         width: 100%;
-        max-width: 600px;
     }
 
     .memora-flashcard {
@@ -445,6 +452,11 @@ cssTemplate.innerHTML = `
 
     /* Responsive adjustments */
     @media (max-width: 640px) {
+        
+        .memora-content-wrapper {
+            max-width: 100%;
+        }
+        
         .memora-flashcard {
             min-height: 400px;
             max-height: 480px;
