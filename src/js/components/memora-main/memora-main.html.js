@@ -39,10 +39,10 @@ htmlTemplate.innerHTML = `
             </button>
 
             <div class="memora-user-profile">
-                <div class="memora-avatar">TG</div>
+                <div class="memora-avatar"></div>
                 <div class="memora-user-info">
-                    <div class="memora-user-name">Tiberius Gherac</div>
-                    <div class="memora-user-email">tg222hh@student.lnu.se</div>
+                    <div class="memora-user-name"></div>
+                    <div class="memora-user-email"></div>
                 </div>
                 <button class="memora-logout-btn" title="Logout">
                     <svg class="memora-logout-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
