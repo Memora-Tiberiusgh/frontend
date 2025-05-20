@@ -84,7 +84,6 @@ customElements.define(
               uid: user.uid,
               displayName: user.displayName,
               email: user.email,
-              photoURL: user.photoURL,
               token: token,
             }
 
