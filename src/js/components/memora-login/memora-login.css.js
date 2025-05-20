@@ -111,9 +111,8 @@ cssTemplate.innerHTML = `
   .oauth-button {
     display: flex;
     align-items: center;
-    justify-content: center;
     width: 100%;
-    padding: 12px;
+    padding: 12px 20px; 
     margin-bottom: 15px;
     border-radius: 8px;
     border: none;
@@ -125,6 +124,24 @@ cssTemplate.innerHTML = `
     transition: all 0.2s ease;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     border: 1px solid var(--gray-light);
+    justify-content: flex-start;
+  }
+
+  .oauth-button svg {
+    margin-right: 15px; 
+  }
+
+  .oauth-button-text {
+    flex: 1;
+    text-align: center;
+    padding-right: 2px; 
+  }
+
+
+  .oauth-button span {
+    flex: 1;
+    text-align: center;
+    padding-right: 24px;
   }
 
   .oauth-button:hover {
@@ -195,9 +212,9 @@ cssTemplate.innerHTML = `
   .social-links {
     display: flex;
     justify-content: center;
-    gap: 20px;
-    margin-top: 20px;
-    margin-bottom: 20px;
+    gap: 40px; 
+    margin-top: 30px;
+    margin-bottom: 30px;
   }
 
   .social-item {
