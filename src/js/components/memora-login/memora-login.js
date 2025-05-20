@@ -1,19 +1,23 @@
 import { htmlTemplate } from "./memora-login.html.js"
 import { cssTemplate } from "./memora-login.css.js"
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth"
+import {
+  GoogleAuthProvider,
+  GithubAuthProvider,
+  FacebookAuthProvider,
+  signInWithPopup,
+  linkWithCredential,
+} from "firebase/auth"
 import { auth } from "../../services/firebase.js"
 
 customElements.define(
   "memora-login",
-  /**
-   * Extends the HTMLElement
-   */
   class extends HTMLElement {
     #abortController = null
 
-    /**
-     * Creates an instance of the custom element and attaches a shadow DOM.
-     */
+    #githubLoginBtn
+    #googleLoginBtn
+    #facebookLoginBtn
+
     constructor() {
       super()
       this.attachShadow({ mode: "open" })
@@ -23,70 +27,104 @@ customElements.define(
       this.#abortController = new AbortController()
     }
 
-    /**
-     * Called when the element is connected to the DOM.
-     */
+    // Handle the when an email is already used trough another provider
+    async handleAccountLinking(error, providerName) {
+      // Only handle the specific error for account linking
+      if (error.code !== "auth/account-exists-with-different-credential") {
+        return
+      }
+
+      // Get the email from the error
+      const email = error.customData?.email
+      if (!email) return
+
+      // Get the credential based on which provider the user clicked
+      let pendingCred = null
+      if (providerName === "GitHub") {
+        pendingCred = GithubAuthProvider.credentialFromError(error)
+      } else if (providerName === "Facebook") {
+        pendingCred = FacebookAuthProvider.credentialFromError(error)
+      } else if (providerName === "Google") {
+        pendingCred = GoogleAuthProvider.credentialFromError(error)
+      }
+
+      // Can't get credential, can't continue
+      if (!pendingCred) return
+
+      try {
+        // Sign in with Google (the provider that has the email)
+        const googleProvider = new GoogleAuthProvider()
+        googleProvider.setCustomParameters({ login_hint: email })
+
+        // Sign in with Google
+        const result = await signInWithPopup(auth, googleProvider)
+
+        // If sign-in successful, link the other provider
+        if (result?.user) {
+          await linkWithCredential(result.user, pendingCred)
+        }
+      } catch (error) {
+        //:TODO: Add UI for informing the user about the error
+      }
+    }
+
     connectedCallback() {
-      const signal = this.#abortController.signal
+      this.#googleLoginBtn = this.shadowRoot.querySelector("#google-login")
+      this.#githubLoginBtn = this.shadowRoot.querySelector("#github-login")
+      this.#facebookLoginBtn = this.shadowRoot.querySelector("#facebook-login")
 
-      // Set up event listeners for authentication
-      const googleLoginBtn = this.shadowRoot.getElementById("google-login")
-      const twitterLoginBtn = this.shadowRoot.getElementById("twitter-login")
-      const appleLoginBtn = this.shadowRoot.getElementById("apple-login")
+      this.#setupEventlisteners()
+    }
 
-      // Add click handler for Google login
-      googleLoginBtn.addEventListener("click", () => {
-        const provider = new GoogleAuthProvider()
-
-        //:TODO: Change to async await?
-        signInWithPopup(auth, provider)
-          .then((result) => {
-            // This gives you a Google Access Token. You can use it to access the Google API.
-            const credential = GoogleAuthProvider.credentialFromResult(result)
-            const token = credential.accessToken
-            // The signed-in user info.
-            const user = result.user
-            console.log("Successfully signed in with Google", user)
-            // IdP data available using getAdditionalUserInfo(result)
-          })
-          .catch(
-            (error) => {
-              // Handle Errors here.
-              const errorCode = error.code
-              const errorMessage = error.message
-              console.error("Google sign-in error:", errorMessage)
-              // The email of the user's account used.
-              const email = error.customData?.email
-              // The AuthCredential type that was used.
-              const credential = GoogleAuthProvider.credentialFromError(error)
-              // You might want to display the error to the user
-            },
-            { signal }
-          )
-      })
-
-      twitterLoginBtn.addEventListener(
+    #setupEventlisteners() {
+      // Set up the Google login button
+      this.#googleLoginBtn.addEventListener(
         "click",
-        () => {
-          console.log("Twitter login not implemented yet")
+        async () => {
+          try {
+            const provider = new GoogleAuthProvider()
+            await signInWithPopup(auth, provider)
+          } catch (error) {
+            await this.handleAccountLinking(error, "Google")
+          }
         },
-        { signal }
+        { signal: this.#abortController.signal }
       )
 
-      appleLoginBtn.addEventListener(
+      // Set up the GitHub login button
+      this.#githubLoginBtn.addEventListener(
         "click",
-        () => {
-          console.log("Apple login not implemented yet")
+        async () => {
+          try {
+            const provider = new GithubAuthProvider()
+            provider.addScope("user:email")
+            provider.addScope("read:user")
+            await signInWithPopup(auth, provider)
+          } catch (error) {
+            await this.handleAccountLinking(error, "GitHub")
+          }
         },
-        { signal }
+        { signal: this.#abortController.signal }
+      )
+
+      // Set up the Facebook login button
+      this.#facebookLoginBtn.addEventListener(
+        "click",
+        async () => {
+          try {
+            const provider = new FacebookAuthProvider()
+            provider.addScope("email")
+            await signInWithPopup(auth, provider)
+          } catch (error) {
+            await this.handleAccountLinking(error, "Facebook")
+          }
+        },
+        { signal: this.#abortController.signal }
       )
     }
 
-    /**
-     * Called when the element is disconnected from the DOM.
-     */
     disconnectedCallback() {
-      // Abort all event listeners at once
+      // Clean up event listeners
       if (this.#abortController) {
         this.#abortController.abort()
       }
