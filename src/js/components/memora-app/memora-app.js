@@ -13,6 +13,7 @@ customElements.define(
   class extends HTMLElement {
     #container
     #userCreateURL = `${API_BASE_URL}/api/v1/users`
+    #abortController = new AbortController()
 
     /**
      * Creates an instance of the custom element and attaches a shadow DOM.
@@ -26,6 +27,20 @@ customElements.define(
       this.#container = this.shadowRoot.getElementById("component-container")
     }
 
+    /**
+     * Called when the element is connected to the DOM.
+     */
+    connectedCallback() {
+      this.#hello()
+
+      // Handle static pages first
+      const isStaticPage = this.#handleStaticPages()
+      if (!isStaticPage) {
+        // For all other routes, handle auth flow
+        this.unsubscribe = this.#setupAuthListener()
+      }
+    }
+
     // Clear all children from the container
     #clearContainer() {
       while (this.#container.firstChild) {
@@ -33,80 +48,121 @@ customElements.define(
       }
     }
 
-    /**
-     * Called when the element is connected to the DOM.
-     */
-    connectedCallback() {
+    // Display console welcome message
+    #hello() {
+      console.log(
+        "%cWelcome to Memora!",
+        "font-size: 16px; font-weight: bold; color: #4A7FB0;"
+      )
+      console.log(
+        "%cDoes this page need fixes or improvements? Join our discussions or contribute to help make Memora more lovable.",
+        "font-size: 12px;"
+      )
+      console.log(
+        "%c🤝 Contribute to Memora: https://github.com/Memora-Tiberiusgh",
+        "font-size: 12px; color: #4A7FB0;"
+      )
+      console.log(
+        "%c💬 Join our discussions: https://github.com/orgs/Memora-Tiberiusgh/discussions",
+        "font-size: 12px; color: #4A7FB0;"
+      )
+    }
+
+    // Handle static pages (terms, privacy)
+    #handleStaticPages() {
       const path = window.location.pathname
 
-      // Simple path-based component loading
       if (path === "/terms.html") {
         this.#clearContainer()
         this.#container.appendChild(document.createElement("memora-terms"))
-        return
+        return true
       }
 
       if (path === "/privacy.html") {
         this.#clearContainer()
         this.#container.appendChild(document.createElement("memora-privacy"))
-        return
+        return true
       }
 
-      // For all other routes, handle auth flow
+      return false
+    }
+
+    // Set up authentication listener
+    #setupAuthListener() {
+      // Start with login component
       this.#clearContainer()
       this.#container.appendChild(document.createElement("memora-login"))
 
       // Set up auth listener
-      this.unsubscribe = auth.onAuthStateChanged(async (user) => {
+      return auth.onAuthStateChanged(async (user) => {
         if (user) {
-          // User is logged in, show main component
-          this.#clearContainer()
-
-          try {
-            // Create user in backend
-            const token = await user.getIdToken()
-            await fetch(this.#userCreateURL, {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                uid: user.uid,
-                displayName: user.displayName,
-                email: user.email,
-              }),
-            })
-
-            // Create and display main component
-            const mainComponent = document.createElement("memora-main")
-            mainComponent.userProfile = {
-              uid: user.uid,
-              displayName: user.displayName,
-              email: user.email,
-              token: token,
-            }
-
-            // Handle logout event
-            mainComponent.addEventListener("memora-logout", () => {
-              auth.signOut()
-              this.#clearContainer()
-              this.#container.appendChild(
-                document.createElement("memora-login")
-              )
-            })
-
-            this.#container.appendChild(mainComponent)
-          } catch (error) {
-            // console.error("Error:", error)
-            this.#clearContainer()
-
-            const errorElement = document.createElement("div")
-            errorElement.textContent = "An error occurred. Please try again."
-            this.#container.appendChild(errorElement)
-          }
+          await this.#handleLoggedInUser(user)
         }
       })
+    }
+
+    // Handle logged in user
+    async #handleLoggedInUser(user) {
+      this.#clearContainer()
+
+      try {
+        // Create user in backend
+        const token = await user.getIdToken()
+        await this.#createUserInBackend(user, token)
+
+        // Create and display main component
+        const mainComponent = this.#createMainComponent(user, token)
+        this.#container.appendChild(mainComponent)
+      } catch (error) {
+        this.#displayError()
+      }
+    }
+
+    // Create user in backend
+    async #createUserInBackend(user, token) {
+      const signal = this.#abortController.signal
+
+      await fetch(this.#userCreateURL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          uid: user.uid,
+          displayName: user.displayName,
+          email: user.email,
+        }),
+        signal,
+      })
+    }
+
+    // Create main component
+    #createMainComponent(user, token) {
+      const mainComponent = document.createElement("memora-main")
+      mainComponent.userProfile = {
+        uid: user.uid,
+        displayName: user.displayName,
+        email: user.email,
+        token: token,
+      }
+
+      // Handle logout event
+      mainComponent.addEventListener("memora-logout", () => {
+        auth.signOut()
+        this.#clearContainer()
+        this.#container.appendChild(document.createElement("memora-login"))
+      })
+
+      return mainComponent
+    }
+
+    // Display error message
+    #displayError() {
+      this.#clearContainer()
+      const errorElement = document.createElement("div")
+      errorElement.textContent = "An error occurred. I suggest to try again."
+      this.#container.appendChild(errorElement)
     }
 
     /**
@@ -117,6 +173,8 @@ customElements.define(
       if (this.unsubscribe) {
         this.unsubscribe()
       }
+
+      this.#abortController.abort()
     }
   }
 )
