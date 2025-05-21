@@ -151,7 +151,6 @@ customElements.define(
         }
 
         const collections = await response.json()
-        console.log(collections)
         this.#collections = collections
 
         // Render the collections
@@ -165,7 +164,7 @@ customElements.define(
           this.noMoreCollections.style.display = "none"
         }
       } catch (error) {
-        console.error("Error fetching collections:", error)
+        // console.error("Error fetching collections:", error)
       }
     }
 
@@ -248,7 +247,7 @@ customElements.define(
           //:TODO: Add error message
         }
       } catch (error) {
-        console.error("Error importing collection:", error)
+        // console.error("Error importing collection:", error.)
         this.addButton.disabled = false
         this.addButton.textContent = "Add to my collection"
       }
