@@ -69,7 +69,7 @@ customElements.define(
         try {
           this.userProfile = JSON.parse(newValue)
         } catch (error) {
-          console.error(error)
+          // console.error(error)
         }
       }
     }
@@ -471,7 +471,7 @@ customElements.define(
         // Append to main content
         this.#mainContent.appendChild(settingsComponent)
       } catch (error) {
-        console.error("Error loading review component:", error)
+        // console.error("Error loading review component:", error)
         // Show error message to user
         alert("Unable to load the settings. Please try again.")
         // Return to welcome screen
@@ -516,7 +516,7 @@ customElements.define(
         // Append to main content
         this.#mainContent.appendChild(reviewComponent)
       } catch (error) {
-        console.error("Error loading review component:", error)
+        // console.error("Error loading review component:", error)
         // Show error message to user
         alert("Unable to load the flashcards creator. Please try again.")
         // Return to welcome screen
@@ -695,7 +695,7 @@ customElements.define(
 
         this.#isCreatingCollection = true
       } catch (error) {
-        console.error("Error loading collection component:", error)
+        // console.error("Error loading collection component:", error)
 
         // Show error message to user
         alert("Unable to load collection creator. Please try again.")
