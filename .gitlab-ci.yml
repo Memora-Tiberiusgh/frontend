@@ -30,6 +30,5 @@ trigger_deploy:
     branch: main
   only:
     - main
-    - pipelineRefactoring
   needs:
     - build
