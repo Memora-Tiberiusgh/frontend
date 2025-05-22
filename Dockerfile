@@ -1,19 +1,19 @@
-FROM node:22-alpine AS build
+# FROM node:22-alpine AS build
 
-RUN addgroup -S nodejs && adduser -S nodejs -G nodejs
+# RUN addgroup -S nodejs && adduser -S nodejs -G nodejs
 
-WORKDIR /frontend
+# WORKDIR /frontend
 
-RUN chown -R nodejs:nodejs /frontend
+# RUN chown -R nodejs:nodejs /frontend
 
-USER nodejs
+# USER nodejs
 
-COPY --chown=nodejs:nodejs package*.json ./
+# COPY --chown=nodejs:nodejs package*.json ./
 
-RUN npm install
+# RUN npm install
 
-COPY --chown=nodejs:nodejs . .
+# COPY --chown=nodejs:nodejs . .
 
-EXPOSE 5173
+# EXPOSE 5173
 
-CMD ["npm", "run", "dev"]
+# CMD ["npm", "run", "dev"]
