@@ -27,7 +27,7 @@ trigger_deploy:
   stage: deploy
   trigger:
     project: 1dv613/student/tg222hh/memora/docker-compose-config
-    branch: main
+    branch: pipelineRefactor
   only:
     - main
     - pipelineRefactoring
