@@ -1,19 +1,32 @@
-# FROM node:22-alpine AS build
+FROM node:22-alpine AS build
 
-# RUN addgroup -S nodejs && adduser -S nodejs -G nodejs
+WORKDIR /frontend
 
-# WORKDIR /frontend
+COPY package*.json ./
+RUN npm install
 
-# RUN chown -R nodejs:nodejs /frontend
+COPY . .
+RUN npm run build
 
-# USER nodejs
+# Production stage - serve with Node.js
+FROM node:22-alpine
 
-# COPY --chown=nodejs:nodejs package*.json ./
+# Install serve as root first
+RUN npm install -g serve
 
-# RUN npm install
+# Then create user and switch
+RUN addgroup -S nodejs && adduser -S nodejs -G nodejs
 
-# COPY --chown=nodejs:nodejs . .
+WORKDIR /frontend
 
-# EXPOSE 5173
+RUN chown -R nodejs:nodejs /frontend
 
-# CMD ["npm", "run", "dev"]
+USER nodejs
+
+# Copy built files from build stage
+COPY --from=build --chown=nodejs:nodejs /frontend/dist ./dist
+
+EXPOSE 3000
+
+# Serve the built files
+CMD ["serve", "-s", "dist", "-l", "3000"]
