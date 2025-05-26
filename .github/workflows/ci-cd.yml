@@ -63,14 +63,14 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - name: Trigger deployment repository
-      uses: peter-evans/repository-dispatch@v3
+        uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.DEPLOY_TOKEN }}
-          repository: https://github.com/Memora-Tiberiusgh/orchestrator
+          repository: Memora-Tiberiusgh/orchestrator
           event-type: deploy
           client-payload: |
-          {
-            "image": "ghcr.io/${{ github.repository }}:latest",
-            "sha": "${{ github.sha }}",
-            "ref": "${{ github.ref }}"
-          }
+            {
+              "image": "ghcr.io/${{ github.repository }}:latest",
+              "sha": "${{ github.sha }}",
+              "ref": "${{ github.ref }}"
+            }
