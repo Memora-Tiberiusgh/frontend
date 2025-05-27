@@ -79,7 +79,7 @@ jobs:
         with:
           token: ${{ secrets.DEPLOY_TOKEN }}
           repository: Memora-Tiberiusgh/orchestrator
-          event-type: deploy
+          event-type: frontend-updated
           client-payload: |
             {
               "image": "ghcr.io/${{ steps.repo.outputs.repository }}:latest",
