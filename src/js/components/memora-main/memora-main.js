@@ -1,11 +1,11 @@
-import { htmlTemplate } from "./memora-main.html.js"
-import { cssTemplate } from "./memora-main.css.js"
+import { htmlTemplate } from './memora-main.html.js'
+import { cssTemplate } from './memora-main.css.js'
 
 // Get the API base URL from environment variables
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ""
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 
 customElements.define(
-  "memora-main",
+  'memora-main',
   /**
    * Extends the HTMLElement
    */
@@ -41,7 +41,7 @@ customElements.define(
      */
     constructor() {
       super()
-      this.attachShadow({ mode: "open" })
+      this.attachShadow({ mode: 'open' })
       this.shadowRoot.appendChild(htmlTemplate.content.cloneNode(true))
       this.shadowRoot.appendChild(cssTemplate.content.cloneNode(true))
 
@@ -54,7 +54,7 @@ customElements.define(
      * @returns {string[]} The list of attributes to be observed.
      */
     static get observedAttributes() {
-      return ["user-data"]
+      return ['user-data']
     }
 
     /**
@@ -65,7 +65,7 @@ customElements.define(
      * @param {string} newValue The new value of the attribute.
      */
     attributeChangedCallback(name, oldValue, newValue) {
-      if (newValue !== oldValue && name === "user-data") {
+      if (newValue !== oldValue && name === 'user-data') {
         try {
           this.userProfile = JSON.parse(newValue)
         } catch (error) {
@@ -75,8 +75,9 @@ customElements.define(
     }
 
     /**
-     * Setter for user profile data
-     * @param {null} data
+     * Setter for user profile data.
+     *
+     * @param {object|null} data - User profile object containing uid, displayName, email, and token
      */
     set userProfile(data) {
       this.#userProfile = data
@@ -86,29 +87,43 @@ customElements.define(
       }
     }
 
+    /**
+     * Getter for user profile data.
+     *
+     * @returns {object|null} User profile object or null if not set
+     */
+    get userProfile() {
+      return this.#userProfile
+    }
+
+    /**
+     * Handles clicks on collection items, including remove and settings icons.
+     *
+     * @param {Event} event - Click event object
+     */
     #handleCollectionItemClick(event) {
       // Handle remove icon click
-      const removeIcon = event.target.closest(".memora-remove-icon")
+      const removeIcon = event.target.closest('.memora-remove-icon')
       if (removeIcon) {
         event.stopPropagation()
-        const collectionItem = removeIcon.closest(".memora-collection-item")
+        const collectionItem = removeIcon.closest('.memora-collection-item')
         const collectionId = collectionItem.dataset.collectionId
         this.#handleRemovePublicCollection(collectionId)
         return
       }
 
       // Handle settings icon click
-      const settingsIcon = event.target.closest(".memora-settings-icon")
+      const settingsIcon = event.target.closest('.memora-settings-icon')
       if (settingsIcon) {
         event.stopPropagation()
-        const collectionItem = settingsIcon.closest(".memora-collection-item")
+        const collectionItem = settingsIcon.closest('.memora-collection-item')
         const collectionId = collectionItem.dataset.collectionId
         this.#handleSettingsIconClick(collectionId)
         return
       }
 
       // Handle collection item click
-      const collectionItem = event.target.closest(".memora-collection-item")
+      const collectionItem = event.target.closest('.memora-collection-item')
       if (collectionItem) {
         const collectionId = collectionItem.dataset.collectionId
         const collection = this.#collections.find((c) => c.id === collectionId)
@@ -118,7 +133,11 @@ customElements.define(
       }
     }
 
-    // Helper method for settings icon click handling
+    /**
+     * Helper method for settings icon click handling.
+     *
+     * @param {string} collectionId - ID of the collection to show settings for
+     */
     #handleSettingsIconClick(collectionId) {
       const collection = this.#collections.find((c) => c.id === collectionId)
       if (collection) {
@@ -134,45 +153,45 @@ customElements.define(
     connectedCallback() {
       // Cache DOM references
       this.#welcomeScreen = this.shadowRoot.querySelector(
-        ".memora-welcome-screen"
+        '.memora-welcome-screen'
       )
-      this.#mainContent = this.shadowRoot.querySelector(".memora-main-content")
+      this.#mainContent = this.shadowRoot.querySelector('.memora-main-content')
 
       this.#collectionsList = this.shadowRoot.querySelector(
-        ".memora-collections-list"
+        '.memora-collections-list'
       )
-      this.#logoutButton = this.shadowRoot.querySelector(".memora-logout-btn")
+      this.#logoutButton = this.shadowRoot.querySelector('.memora-logout-btn')
 
-      this.#userNameElement = this.shadowRoot.querySelector(".memora-user-name")
+      this.#userNameElement = this.shadowRoot.querySelector('.memora-user-name')
 
       this.#userEmailElement =
-        this.shadowRoot.querySelector(".memora-user-email")
+        this.shadowRoot.querySelector('.memora-user-email')
 
-      this.#userAvatarElement = this.shadowRoot.querySelector(".memora-avatar")
+      this.#userAvatarElement = this.shadowRoot.querySelector('.memora-avatar')
 
       this.#loadingMessage = this.shadowRoot.querySelector(
-        ".memora-loading-message"
+        '.memora-loading-message'
       )
       this.#errorMessage = this.shadowRoot.querySelector(
-        ".memora-error-message"
+        '.memora-error-message'
       )
       this.#settingsIconTemplate = this.shadowRoot.querySelector(
-        "#memora-settings-icon-template"
+        '#memora-settings-icon-template'
       )
       this.#publicBadgeTemplate = this.shadowRoot.querySelector(
-        "#memora-public-badge-template"
+        '#memora-public-badge-template'
       )
 
       this.#addCollectionButton = this.shadowRoot.querySelector(
-        ".memora-add-collection-btn"
+        '.memora-add-collection-btn'
       )
 
       this.#removeIconTemplate = this.shadowRoot.querySelector(
-        "#memora-remove-icon-template"
+        '#memora-remove-icon-template'
       )
 
       this.#userProfileElement = this.shadowRoot.querySelector(
-        ".memora-user-profile"
+        '.memora-user-profile'
       )
 
       // Set up event listeners
@@ -191,7 +210,7 @@ customElements.define(
     }
 
     /**
-     * Updates the user profile display with the current user data
+     * Updates the user profile display with the current user data.
      */
     #updateUserProfile() {
       if (!this.#userProfile) return
@@ -208,25 +227,25 @@ customElements.define(
       // Generate and update avatar initials
       if (this.#userAvatarElement) {
         const initials = this.#generateInitials(
-          this.#userProfile.displayName || this.#userProfile.email || ""
+          this.#userProfile.displayName || this.#userProfile.email || ''
         )
         this.#userAvatarElement.textContent = initials
       }
     }
 
     /**
-     * Generates initials from a user's name
-     * Handles cases with multiple names
+     * Generates initials from a user's name.
+     * Handles cases with multiple names.
      *
      * @param {string} name The user's name
      * @returns {string} The user's initials (up to 2 characters)
      */
     #generateInitials(name) {
       // If no name is provided, return a default
-      if (!name || name.trim() === "") return "Ghost"
+      if (!name || name.trim() === '') return 'Ghost'
 
       // For email addresses, use the first character
-      if (name.includes("@")) {
+      if (name.includes('@')) {
         return name.charAt(0).toUpperCase()
       }
 
@@ -247,7 +266,7 @@ customElements.define(
     }
 
     /**
-     * Sets up all event listeners for the component
+     * Sets up all event listeners for the component.
      */
     #setupEventListeners() {
       // Get the signal from the abort controller
@@ -255,7 +274,7 @@ customElements.define(
 
       // Add delegated event listener for collection items
       this.#collectionsList.addEventListener(
-        "click",
+        'click',
         (event) => this.#handleCollectionItemClick(event),
         { signal }
       )
@@ -263,7 +282,7 @@ customElements.define(
       // Add collection button event listener
       if (this.#addCollectionButton) {
         this.#addCollectionButton.addEventListener(
-          "click",
+          'click',
           () => {
             this.#showCreateCollectionComponent()
           },
@@ -273,9 +292,9 @@ customElements.define(
 
       if (this.#logoutButton) {
         this.#logoutButton.addEventListener(
-          "click",
+          'click',
           () => {
-            const logoutEvent = new CustomEvent("memora-logout", {})
+            const logoutEvent = new CustomEvent('memora-logout', {})
             this.dispatchEvent(logoutEvent)
           },
           { signal }
@@ -285,7 +304,7 @@ customElements.define(
       // Add click handler to user profile for token copying
       if (this.#userProfileElement) {
         this.#userProfileElement.addEventListener(
-          "click",
+          'click',
           () => {
             this.#clickCount++
             if (this.#clickCount === 3) {
@@ -305,15 +324,20 @@ customElements.define(
         )
       }
     }
-    // Keep state of the collection in focus
+
+    /**
+     * Keep state of the collection in focus.
+     *
+     * @param {object|null} [collection=null] - Collection object to set as active, or null to clear active state
+     */
     #updateCollectionActiveState(collection = null) {
       // Update collection items to show active state
       const collectionItems = this.shadowRoot.querySelectorAll(
-        ".memora-collection-item"
+        '.memora-collection-item'
       )
       // First, remove active from all
       collectionItems.forEach((item) => {
-        item.classList.remove("active")
+        item.classList.remove('active')
       })
 
       // Only set active if a collection was provided
@@ -321,14 +345,14 @@ customElements.define(
         collectionItems.forEach((item) => {
           // Use the collection ID for comparison
           if (item.dataset.collectionId === collection.id) {
-            item.classList.add("active")
+            item.classList.add('active')
           }
         })
       }
     }
 
     /**
-     * Renders the collections in the sidebar based on the current data
+     * Renders the collections in the sidebar based on the current data.
      */
     #renderCollections() {
       // Clear existing collection items
@@ -339,14 +363,14 @@ customElements.define(
       // Add collection items
       this.#collections.forEach((collection) => {
         // Create list item
-        const item = document.createElement("li")
-        item.className = "memora-collection-item"
+        const item = document.createElement('li')
+        item.className = 'memora-collection-item'
         // Add the collection ID as a data attribute to toggle the correct collection as "active"
         item.dataset.collectionId = collection.id
 
         // Create name span
-        const nameSpan = document.createElement("span")
-        nameSpan.className = "memora-collection-name-text"
+        const nameSpan = document.createElement('span')
+        nameSpan.className = 'memora-collection-name-text'
         nameSpan.textContent = collection.name
         item.appendChild(nameSpan)
 
@@ -355,16 +379,16 @@ customElements.define(
           this.#currentCollection &&
           this.#currentCollection.id === collection.id
         ) {
-          item.classList.add("active")
+          item.classList.add('active')
         }
 
         // Create a container for icons
-        const iconsContainer = document.createElement("div")
-        iconsContainer.className = "memora-collection-item-icons"
+        const iconsContainer = document.createElement('div')
+        iconsContainer.className = 'memora-collection-item-icons'
 
         if (collection.isPublic) {
           // Add public badge for public collections
-          item.classList.add("public")
+          item.classList.add('public')
           const badge = this.#publicBadgeTemplate.content.cloneNode(true)
           item.appendChild(badge)
           // Add remove icon for public collections
@@ -387,7 +411,9 @@ customElements.define(
     }
 
     /**
-     * Selects a collection and displays its reviews
+     * Selects a collection and displays its reviews.
+     *
+     * @param {object} collection - Collection object to select and display
      */
     #selectCollection(collection) {
       // Update the current collection
@@ -401,38 +427,41 @@ customElements.define(
     }
 
     /**
-     * Shows the collection settings component
+     * Shows the collection settings component.
+     *
+     * @param {string} collectionId - ID of the collection to configure settings for
+     * @returns {Promise<void>}
      */
     async #showSettingsComponent(collectionId) {
       // Hide the welcome screen and review view
-      this.#welcomeScreen.style.display = "none"
+      this.#welcomeScreen.style.display = 'none'
 
       // Remove any existing components from main content
       this.#clearMainContent()
 
       try {
         // Dynamically import the review component
-        await import("../memora-settings")
+        await import('../memora-settings')
 
         // Create the review component
-        const settingsComponent = document.createElement("memora-settings")
+        const settingsComponent = document.createElement('memora-settings')
 
         // Pass the collection ID and auth token
         if (this.#userProfile && this.#userProfile.token) {
-          settingsComponent.setAttribute("token", this.#userProfile.token)
+          settingsComponent.setAttribute('token', this.#userProfile.token)
         }
 
         // Pass the collection name for display purposes
         if (this.#currentCollection) {
           settingsComponent.setAttribute(
-            "collection-name",
+            'collection-name',
             this.#currentCollection.name
           )
         }
 
-        settingsComponent.setAttribute("collection-id", collectionId)
+        settingsComponent.setAttribute('collection-id', collectionId)
 
-        settingsComponent.addEventListener("settings-canceled", () => {
+        settingsComponent.addEventListener('settings-canceled', () => {
           // Hide the creator
           this.#clearMainContent()
 
@@ -444,7 +473,7 @@ customElements.define(
           }
         })
 
-        settingsComponent.addEventListener("uppdate-name", (event) => {
+        settingsComponent.addEventListener('uppdate-name', (event) => {
           // Update the collection name if needed
           this.#currentCollection.name = event.detail
 
@@ -452,7 +481,7 @@ customElements.define(
           this.#renderCollections()
         })
 
-        settingsComponent.addEventListener("collection-deleted", () => {
+        settingsComponent.addEventListener('collection-deleted', () => {
           // Remove the deleted collection from the collections array
           this.#collections = this.#collections.filter(
             (collection) => collection.id !== this.#currentCollection.id
@@ -473,42 +502,42 @@ customElements.define(
       } catch (error) {
         // console.error("Error loading review component:", error)
         // Show error message to user
-        alert("Unable to load the settings. Please try again.")
+        alert('Unable to load the settings. Please try again.')
         // Return to welcome screen
         this.#showWelcomeScreen()
       }
     }
 
     /**
-     * Create and display the review component
+     * Create and display the review component.
      *
      * @param {string|number} collectionId - The ID of the collection to display
      */
     async #showReviewComponent(collectionId) {
       // Hide the welcome screen
-      this.#welcomeScreen.style.display = "none"
+      this.#welcomeScreen.style.display = 'none'
 
       // Clear the main content
       this.#clearMainContent()
 
       try {
         // Dynamically import the review component
-        await import("../memora-review")
+        await import('../memora-review')
 
         // Create the review component
-        const reviewComponent = document.createElement("memora-review")
+        const reviewComponent = document.createElement('memora-review')
 
         // Pass the collection ID and auth token
-        reviewComponent.setAttribute("collection-id", collectionId)
+        reviewComponent.setAttribute('collection-id', collectionId)
 
         if (this.#userProfile && this.#userProfile.token) {
-          reviewComponent.setAttribute("token", this.#userProfile.token)
+          reviewComponent.setAttribute('token', this.#userProfile.token)
         }
 
         // Pass the collection name for display purposes
         if (this.#currentCollection) {
           reviewComponent.setAttribute(
-            "collection-name",
+            'collection-name',
             this.#currentCollection.name
           )
         }
@@ -518,61 +547,65 @@ customElements.define(
       } catch (error) {
         // console.error("Error loading review component:", error)
         // Show error message to user
-        alert("Unable to load the flashcards creator. Please try again.")
+        alert('Unable to load the flashcards creator. Please try again.')
         // Return to welcome screen
         this.#showWelcomeScreen()
       }
     }
 
     /**
-     * Clears all dynamic components from the main content area
+     * Clears all dynamic components from the main content area.
      */
     #clearMainContent() {
       // Find and remove all custom elements in the main content
       const customElements = this.#mainContent.querySelectorAll(
-        ":not(.memora-welcome-screen)"
+        ':not(.memora-welcome-screen)'
       )
       customElements.forEach((element) => {
-        if (element.nodeName.includes("-")) {
+        if (element.nodeName.includes('-')) {
           element.remove()
         }
       })
     }
 
     /**
-     * Shows the welcome screen
+     * Shows the welcome screen.
      */
     #showWelcomeScreen() {
       if (this.#isCreatingCollection) return
 
       // Show welcome screen, hide review view
-      this.#welcomeScreen.style.display = "block"
+      this.#welcomeScreen.style.display = 'block'
 
       // Clear the main content of any other components
       this.#clearMainContent()
 
       // Clear active class from all collection items
       const collectionItems = this.shadowRoot.querySelectorAll(
-        ".memora-collection-item"
+        '.memora-collection-item'
       )
-      collectionItems.forEach((item) => item.classList.remove("active"))
+      collectionItems.forEach((item) => item.classList.remove('active'))
 
       // Reset current collection
       this.#currentCollection = null
     }
 
-    // Calling the back-end
+    /**
+     * Fetches user collections from the API and updates the UI.
+     *
+     * @returns {Promise<void>}
+     */
     async #fetchUserCollection() {
       try {
         // Clear previous errors
-        this.#errorMessage.style.display = "none"
+        this.#errorMessage.style.display = 'none'
 
         // Show loading message
-        this.#loadingMessage.style.display = "block"
+        this.#loadingMessage.style.display = 'block'
 
         // Clear existing collection items (but keep the messages)
         const collectionItems = this.shadowRoot.querySelectorAll(
-          ".memora-collection-item"
+          '.memora-collection-item'
         )
         collectionItems.forEach((item) => item.remove())
 
@@ -580,39 +613,39 @@ customElements.define(
 
         if (!token) {
           this.#errorMessage.textContent =
-            "Unable to authenticate. Please try logging out and back in."
-          this.#errorMessage.style.display = "block"
-          this.#loadingMessage.style.display = "none"
+            'Unable to authenticate. Please try logging out and back in.'
+          this.#errorMessage.style.display = 'block'
+          this.#loadingMessage.style.display = 'none'
           return
         }
 
         const response = await fetch(this.#collectionURL, {
-          method: "GET",
+          method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-type": "application/json",
-          },
+            'Content-type': 'application/json'
+          }
         })
 
         if (!response.ok) {
-          throw new Error("API error: " + response.status)
+          throw new Error('API error: ' + response.status)
         }
 
         const collections = await response.json()
         this.#updateCollections(collections)
 
         // Hide loading message when done
-        this.#loadingMessage.style.display = "none"
+        this.#loadingMessage.style.display = 'none'
       } catch (error) {
         this.#handleApiError(
           error,
-          "Error loading collections. Most probably a server is down."
+          'Error loading collections. Most probably a server is down.'
         )
       }
     }
 
     /**
-     * Shows the collection creator component
+     * Shows the collection creator component.
      */
     async #showCreateCollectionComponent() {
       // Clear active state from all collections
@@ -622,29 +655,29 @@ customElements.define(
       const previousCollection = this.#currentCollection
 
       // Hide other views
-      this.#welcomeScreen.style.display = "none"
+      this.#welcomeScreen.style.display = 'none'
 
       // Clear the main content
       this.#clearMainContent()
 
       try {
         // Dynamically import the collection component
-        await import("../memora-collection")
+        await import('../memora-collection')
 
         // Create and append the collection creator component
-        const collectionCreator = document.createElement("memora-collection")
+        const collectionCreator = document.createElement('memora-collection')
 
         // Pass the authentication token
         if (this.#userProfile && this.#userProfile.token) {
-          collectionCreator.setAttribute("token", this.#userProfile.token)
+          collectionCreator.setAttribute('token', this.#userProfile.token)
         }
 
-        collectionCreator.addEventListener("browse-public-collections", () => {
+        collectionCreator.addEventListener('browse-public-collections', () => {
           this.showPublicCollections()
         })
 
         // Set up event listeners for the component
-        collectionCreator.addEventListener("collection-created", (event) => {
+        collectionCreator.addEventListener('collection-created', (event) => {
           // Get the collection data from the event
           const newCollection = event.detail
 
@@ -661,14 +694,14 @@ customElements.define(
           this.#updateCollectionActiveState(newCollection)
 
           const activeItem = this.shadowRoot.querySelector(
-            ".memora-collection-item.active"
+            '.memora-collection-item.active'
           )
           if (activeItem) {
-            activeItem.scrollIntoView({ behavior: "smooth", block: "nearest" })
+            activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
           }
         })
 
-        collectionCreator.addEventListener("collection-done", () => {
+        collectionCreator.addEventListener('collection-done', () => {
           // Hide the creator
           this.#clearMainContent()
           this.#isCreatingCollection = false
@@ -681,7 +714,7 @@ customElements.define(
           }
         })
 
-        collectionCreator.addEventListener("collection-cancelled", () => {
+        collectionCreator.addEventListener('collection-cancelled', () => {
           this.#hideCollectionCreator()
 
           // Restore previous active collection if it existed
@@ -698,7 +731,7 @@ customElements.define(
         // console.error("Error loading collection component:", error)
 
         // Show error message to user
-        alert("Unable to load collection creator. Please try again.")
+        alert('Unable to load collection creator. Please try again.')
 
         // Return to welcome screen
         this.#showWelcomeScreen()
@@ -706,7 +739,7 @@ customElements.define(
     }
 
     /**
-     * Hides the collection creator and returns to the welcome screen
+     * Hides the collection creator and returns to the welcome screen.
      */
     #hideCollectionCreator() {
       this.#clearMainContent()
@@ -721,16 +754,16 @@ customElements.define(
     }
 
     /**
-     * Shows the interface for public collections
+     * Shows the interface for public collections.
      */
     async showPublicCollections() {
       this.#clearMainContent()
-      await import("../memora-public")
+      await import('../memora-public')
 
-      const publicCollectionBrowser = document.createElement("memora-public")
-      publicCollectionBrowser.setAttribute("token", this.#userProfile.token)
+      const publicCollectionBrowser = document.createElement('memora-public')
+      publicCollectionBrowser.setAttribute('token', this.#userProfile.token)
 
-      publicCollectionBrowser.addEventListener("add-collection", (event) => {
+      publicCollectionBrowser.addEventListener('add-collection', (event) => {
         this.#collections.push(event.detail)
         this.#renderCollections()
       })
@@ -738,13 +771,18 @@ customElements.define(
       this.#mainContent.appendChild(publicCollectionBrowser)
     }
 
+    /**
+     * Updates the collections array and re-renders the collection list.
+     *
+     * @param {Array} collections - Array of collection objects to update
+     */
     #updateCollections(collections) {
       this.#collections = collections
       this.#renderCollections()
     }
 
     /**
-     * Handles removing a public collection
+     * Handles removing a public collection.
      *
      * @param {string} collectionId - The ID of the collection to remove
      */
@@ -754,17 +792,17 @@ customElements.define(
         const collection = this.#collections.find((c) => c.id === collectionId)
 
         if (!collection) {
-          throw new Error("Collection not found")
+          throw new Error('Collection not found')
         }
 
         const response = await fetch(
           `${this.#toggleCollectionURL}/${collectionId}`,
           {
-            method: "PUT",
+            method: 'PUT',
             headers: {
               Authorization: `Bearer ${this.#userProfile.token}`,
-              "Content-Type": "application/json",
-            },
+              'Content-Type': 'application/json'
+            }
           }
         )
         if (response.ok) {
@@ -785,28 +823,29 @@ customElements.define(
           // Re-render the collections
           this.#renderCollections()
         } else {
-          //:TODO: Add error message
+          // :TODO: Add error message
         }
       } catch (error) {
         this.#handleApiError(
           error,
-          "Failed to remove the public collection. Please try again.",
+          'Failed to remove the public collection. Please try again.',
           true
         )
       }
     }
 
     /**
-     * Handles API errors consistently
-     * @param {Error} error - The error that occurred
+     * Handles API errors consistently.
+     *
+     * @param {Error} _error - The error that occurred
      * @param {string} message - User-friendly message to display
      * @param {boolean} showAlert - Whether to show an alert in addition to UI message
      */
-    #handleApiError(error, message, showAlert = false) {
+    #handleApiError(_error, message, showAlert = false) {
       // console.error(error)
-      this.#loadingMessage.style.display = "none"
+      this.#loadingMessage.style.display = 'none'
       this.#errorMessage.textContent = message
-      this.#errorMessage.style.display = "block"
+      this.#errorMessage.style.display = 'block'
 
       if (showAlert) {
         alert(message)

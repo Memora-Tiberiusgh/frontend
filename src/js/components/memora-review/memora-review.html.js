@@ -3,7 +3,7 @@
  * @module memora-review.html
  */
 // Define the HTML template.
-export const htmlTemplate = document.createElement("template")
+export const htmlTemplate = document.createElement('template')
 htmlTemplate.innerHTML = `
     <div class="memora-flashcard-view">
         <div class="memora-content-wrapper">

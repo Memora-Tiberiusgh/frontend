@@ -3,7 +3,7 @@
  * @module memora-app.html
  */
 // Define the HTML template.
-export const htmlTemplate = document.createElement("template")
+export const htmlTemplate = document.createElement('template')
 htmlTemplate.innerHTML = `
 <div class="app-container">
     <div id="component-container"></div>

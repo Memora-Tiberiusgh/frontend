@@ -1,1 +1,1 @@
-import "./memora-public.js"
+import './memora-public.js'

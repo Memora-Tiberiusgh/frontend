@@ -3,7 +3,7 @@
  * @module memora-login.html
  */
 // Define the HTML template.
-export const htmlTemplate = document.createElement("template")
+export const htmlTemplate = document.createElement('template')
 htmlTemplate.innerHTML = `
   <div class="login-container">
     <div class="left-section">

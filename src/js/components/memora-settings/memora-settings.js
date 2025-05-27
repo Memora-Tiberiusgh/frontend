@@ -1,16 +1,16 @@
-import { htmlTemplate } from "./memora-settings.html.js"
-import { cssTemplate } from "./memora-settings.css.js"
+import { htmlTemplate } from './memora-settings.html.js'
+import { cssTemplate } from './memora-settings.css.js'
 
 // Get the API base URL from environment variables
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ""
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 
 customElements.define(
-  "memora-settings",
+  'memora-settings',
   /**
-   * Custom element for managing collection settings
+   * Custom element for managing collection settings.
    */
   class extends HTMLElement {
-    #collectionName = ""
+    #collectionName = ''
     #collectionId = null
     #cards = []
     // #flashcardsAPI = "http://localhost:8086/api/v1/flashcards"
@@ -39,32 +39,38 @@ customElements.define(
     #submissionStatusElement
 
     /**
-     * Creates an instance of MemoraSettings and attaches shadow DOM
+     * Creates an instance of MemoraSettings and attaches shadow DOM.
      */
     constructor() {
       super()
-      this.attachShadow({ mode: "open" })
+      this.attachShadow({ mode: 'open' })
       this.shadowRoot.appendChild(htmlTemplate.content.cloneNode(true))
       this.shadowRoot.appendChild(cssTemplate.content.cloneNode(true))
     }
 
     /**
-     * List of observed attributes
+     * List of observed attributes.
+     *
+     * @returns {string[]} Array of attribute names to observe
      */
     static get observedAttributes() {
-      return ["token", "collection-id", "collection-name"]
+      return ['token', 'collection-id', 'collection-name']
     }
 
     /**
-     * Called when observed attributes change
+     * Called when observed attributes change.
+     *
+     * @param {string} name - Name of the attribute that changed
+     * @param {string|null} oldValue - Previous value of the attribute
+     * @param {string|null} newValue - New value of the attribute
      */
     attributeChangedCallback(name, oldValue, newValue) {
-      if (name === "token" && newValue) {
+      if (name === 'token' && newValue) {
         this.#token = newValue
-      } else if (name === "collection-id" && newValue) {
+      } else if (name === 'collection-id' && newValue) {
         this.#collectionId = newValue
         this.#loadCollection()
-      } else if (name === "collection-name" && newValue) {
+      } else if (name === 'collection-name' && newValue) {
         this.#collectionName = newValue
         if (this.#collectionNameInput) {
           this.#collectionNameInput.value = newValue
@@ -73,44 +79,44 @@ customElements.define(
     }
 
     /**
-     * Called when element is connected to the DOM
+     * Called when element is connected to the DOM.
      */
     connectedCallback() {
       // Cache DOM elements
       this.#collectionNameInput =
-        this.shadowRoot.querySelector("#collection-name")
+        this.shadowRoot.querySelector('#collection-name')
       this.#descriptionInput = this.shadowRoot.querySelector(
-        "#collection-description"
+        '#collection-description'
       )
       this.#errorMessage = this.shadowRoot.querySelector(
-        ".memora-error-message"
+        '.memora-error-message'
       )
-      this.#cardsList = this.shadowRoot.querySelector(".memora-cards-list")
+      this.#cardsList = this.shadowRoot.querySelector('.memora-cards-list')
       this.#noCardsMessage = this.shadowRoot.querySelector(
-        ".memora-no-cards-message"
+        '.memora-no-cards-message'
       )
-      this.#questionInput = this.shadowRoot.querySelector("#flashcard-question")
-      this.#answerInput = this.shadowRoot.querySelector("#flashcard-answer")
+      this.#questionInput = this.shadowRoot.querySelector('#flashcard-question')
+      this.#answerInput = this.shadowRoot.querySelector('#flashcard-answer')
       this.#editQuestionInput = this.shadowRoot.querySelector(
-        "#edit-flashcard-question"
+        '#edit-flashcard-question'
       )
       this.#editAnswerInput = this.shadowRoot.querySelector(
-        "#edit-flashcard-answer"
+        '#edit-flashcard-answer'
       )
 
       this.#generalSettingsView = this.shadowRoot.querySelector(
-        ".memora-general-settings-view"
+        '.memora-general-settings-view'
       )
-      this.#addCardView = this.shadowRoot.querySelector(".memora-add-card-view")
+      this.#addCardView = this.shadowRoot.querySelector('.memora-add-card-view')
       this.#editCardView = this.shadowRoot.querySelector(
-        ".memora-edit-card-view"
+        '.memora-edit-card-view'
       )
       this.#makePublicBtn = this.shadowRoot.querySelector(
-        ".memora-button-make-public"
+        '.memora-button-make-public'
       )
 
       this.#submissionStatusElement = this.shadowRoot.querySelector(
-        ".memora-submission-status"
+        '.memora-submission-status'
       )
 
       // Set initial values if attributes were set before connection
@@ -124,23 +130,28 @@ customElements.define(
       this.#setupEventListeners()
     }
 
+    /**
+     * Fetches collection description and submission status from the API.
+     *
+     * @returns {Promise<void>}
+     */
     async #getDescriptionAndSubmission() {
       try {
         // Fetch collection's description
         const response = await fetch(
           `${this.#collectionAPI}/${this.#collectionId}`,
           {
-            method: "GET",
+            method: 'GET',
             headers: {
               Authorization: `Bearer ${this.#token}`,
-              "Content-Type": "application/json",
-            },
+              'Content-Type': 'application/json'
+            }
           }
         )
 
         if (!response.ok) {
           this.#showError(
-            "The description could not be retrieved for some reason"
+            'The description could not be retrieved for some reason'
           )
         }
 
@@ -150,11 +161,11 @@ customElements.define(
 
         // Update UI based on submission status
         if (this.#isSubmittedToPublic) {
-          this.#submissionStatusElement.style.display = "flex"
-          this.#makePublicBtn.style.display = "none"
+          this.#submissionStatusElement.style.display = 'flex'
+          this.#makePublicBtn.style.display = 'none'
         } else {
-          this.#submissionStatusElement.style.display = "none"
-          this.#makePublicBtn.style.display = "block"
+          this.#submissionStatusElement.style.display = 'none'
+          this.#makePublicBtn.style.display = 'block'
         }
       } catch (error) {
         // console.error(error)
@@ -162,64 +173,64 @@ customElements.define(
     }
 
     /**
-     * Sets up all event listeners for the component
+     * Sets up all event listeners for the component.
      */
     #setupEventListeners() {
       // Save button
-      const saveBtn = this.shadowRoot.querySelector(".memora-button-save")
-      saveBtn.addEventListener("click", () => this.#saveSettings())
+      const saveBtn = this.shadowRoot.querySelector('.memora-button-save')
+      saveBtn.addEventListener('click', () => this.#saveSettings())
 
       // Delete button
-      const deleteBtn = this.shadowRoot.querySelector(".memora-button-delete")
-      deleteBtn.addEventListener("click", () => this.#deleteCollection())
+      const deleteBtn = this.shadowRoot.querySelector('.memora-button-delete')
+      deleteBtn.addEventListener('click', () => this.#deleteCollection())
 
       // Cancel button
-      const doneBtn = this.shadowRoot.querySelector(".memora-button-cancel")
-      doneBtn.addEventListener("click", () => this.#removeSettings())
+      const doneBtn = this.shadowRoot.querySelector('.memora-button-cancel')
+      doneBtn.addEventListener('click', () => this.#removeSettings())
 
       // Add New Card button (show add card view)
       const addNewCardBtn = this.shadowRoot.querySelector(
-        ".memora-button-add-new-card"
+        '.memora-button-add-new-card'
       )
-      addNewCardBtn.addEventListener("click", () => this.#showAddCardView())
+      addNewCardBtn.addEventListener('click', () => this.#showAddCardView())
 
-      const finishBtn = this.shadowRoot.querySelector(".memora-button-back")
-      finishBtn.addEventListener("click", () => this.#removeSettings())
+      const finishBtn = this.shadowRoot.querySelector('.memora-button-back')
+      finishBtn.addEventListener('click', () => this.#removeSettings())
 
       // Back button (show general settings view)
-      const backBtn = this.shadowRoot.querySelector(".memora-back-button")
-      backBtn.addEventListener("click", () => this.#showGeneralSettingsView())
+      const backBtn = this.shadowRoot.querySelector('.memora-back-button')
+      backBtn.addEventListener('click', () => this.#showGeneralSettingsView())
 
       // Add Card button (adds a new card)
       const addCardBtn = this.shadowRoot.querySelector(
-        ".memora-button-add-card"
+        '.memora-button-add-card'
       )
-      addCardBtn.addEventListener("click", () => this.#addFlashcard())
+      addCardBtn.addEventListener('click', () => this.#addFlashcard())
 
       // Back button from edit view
       const backFromEditBtn = this.shadowRoot.querySelector(
-        ".memora-button-back-from-edit"
+        '.memora-button-back-from-edit'
       )
-      backFromEditBtn.addEventListener("click", () =>
+      backFromEditBtn.addEventListener('click', () =>
         this.#showGeneralSettingsView()
       )
 
-      this.#makePublicBtn.addEventListener("click", () =>
+      this.#makePublicBtn.addEventListener('click', () =>
         this.#submitCollectionForPublication()
       )
 
       // Save edited card button
       const saveCardBtn = this.shadowRoot.querySelector(
-        ".memora-button-save-card"
+        '.memora-button-save-card'
       )
-      saveCardBtn.addEventListener("click", () => this.#saveEditedFlashcard())
+      saveCardBtn.addEventListener('click', () => this.#saveEditedFlashcard())
 
       // Cards list event delegation for remove buttons and card clicks
-      this.#cardsList.addEventListener("click", (event) => {
-        const card = event.target.closest(".memora-card-item")
+      this.#cardsList.addEventListener('click', (event) => {
+        const card = event.target.closest('.memora-card-item')
         if (!card) return
 
-        if (event.target.closest(".memora-remove-card")) {
+        if (event.target.closest('.memora-remove-card')) {
           const index = Array.from(this.#cardsList.children).indexOf(card)
           if (index !== -1) {
             this.#removeFlashcard(index)
@@ -234,92 +245,95 @@ customElements.define(
       })
 
       // Allow Enter with Ctrl/Cmd to submit flashcard
-      this.#answerInput.addEventListener("keydown", (event) => {
-        if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+      this.#answerInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
           this.#addFlashcard()
         }
       })
 
       // Allow Enter with Ctrl/Cmd to submit edited flashcard
-      this.#editAnswerInput.addEventListener("keydown", (event) => {
-        if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+      this.#editAnswerInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
           this.#saveEditedFlashcard()
         }
       })
     }
 
     /**
-     * Shows the Add Card view
+     * Shows the Add Card view.
      */
     #showAddCardView() {
       this.#hideError()
-      this.#generalSettingsView.style.display = "none"
-      this.#editCardView.style.display = "none"
-      this.#addCardView.style.display = "block"
+      this.#generalSettingsView.style.display = 'none'
+      this.#editCardView.style.display = 'none'
+      this.#addCardView.style.display = 'block'
       this.#questionInput.focus()
     }
 
     /**
-     * Shows the Edit Card view
+     * Shows the Edit Card view.
      */
     #showEditCardView() {
       this.#hideError()
-      this.#generalSettingsView.style.display = "none"
-      this.#addCardView.style.display = "none"
-      this.#editCardView.style.display = "block"
+      this.#generalSettingsView.style.display = 'none'
+      this.#addCardView.style.display = 'none'
+      this.#editCardView.style.display = 'block'
       this.#editQuestionInput.focus()
     }
 
     /**
-     * Shows the General Settings view
+     * Shows the General Settings view.
      */
     #showGeneralSettingsView() {
       this.#hideError()
-      this.#addCardView.style.display = "none"
-      this.#editCardView.style.display = "none"
-      this.#generalSettingsView.style.display = "block"
+      this.#addCardView.style.display = 'none'
+      this.#editCardView.style.display = 'none'
+      this.#generalSettingsView.style.display = 'block'
       this.#currentEditingCardIndex = null
     }
 
     /**
-     * Shows an error message
+     * Shows an error message.
+     *
      * @param {string} message - The error message to display
      */
     #showError(message) {
       // Get the currently visible view
       let currentView
-      if (this.#generalSettingsView.style.display !== "none") {
+      if (this.#generalSettingsView.style.display !== 'none') {
         currentView = this.#generalSettingsView
-      } else if (this.#addCardView.style.display !== "none") {
+      } else if (this.#addCardView.style.display !== 'none') {
         currentView = this.#addCardView
-      } else if (this.#editCardView.style.display !== "none") {
+      } else if (this.#editCardView.style.display !== 'none') {
         currentView = this.#editCardView
       }
 
       // Find the error message element in the current view
-      const errorElement = currentView.querySelector(".memora-error-message")
+      const errorElement = currentView.querySelector('.memora-error-message')
 
       if (errorElement) {
         errorElement.textContent = message
-        errorElement.style.display = "block"
+        errorElement.style.display = 'block'
       }
     }
 
     /**
-     * Hides all error messages
+     * Hides all error messages.
      */
     #hideError() {
       // Hide all error messages in all views
       const errorElements = this.shadowRoot.querySelectorAll(
-        ".memora-error-message"
+        '.memora-error-message'
       )
       errorElements.forEach((el) => {
-        el.style.display = "none"
+        el.style.display = 'none'
       })
     }
 
     /**
-     * Prepares the edit form for a flashcard
+     * Edits a flashcard at the specified index.
+     *
+     * @param {number} index - Index of the card to edit
      */
     #editFlashcard(index) {
       if (index >= 0 && index < this.#cards.length) {
@@ -336,7 +350,7 @@ customElements.define(
     }
 
     /**
-     * Saves the edited flashcard
+     * Saves the edited flashcard.
      */
     async #saveEditedFlashcard() {
       if (this.#currentEditingCardIndex === null) return
@@ -346,7 +360,7 @@ customElements.define(
 
       // Validate inputs
       if (!question || !answer) {
-        this.#showError("Please enter both question and answer")
+        this.#showError('Please enter both question and answer')
         if (!question) this.#editQuestionInput.focus()
         else this.#editAnswerInput.focus()
         return
@@ -357,19 +371,19 @@ customElements.define(
         const flashcardId = this.#cards[this.#currentEditingCardIndex].id
 
         const response = await fetch(`${this.#flashcardsAPI}/${flashcardId}`, {
-          method: "PATCH",
+          method: 'PATCH',
           headers: {
             Authorization: `Bearer ${this.#token}`,
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            question: question,
-            answer: answer,
-          }),
+            question,
+            answer
+          })
         })
 
         if (!response.ok) {
-          this.#showError("Failed to update the flashcard")
+          this.#showError('Failed to update the flashcard')
           return
         }
 
@@ -383,28 +397,28 @@ customElements.define(
         // Go back to the general view
         this.#showGeneralSettingsView()
       } catch (error) {
-        this.#showError("An error occurred while updating the flashcard")
+        this.#showError('An error occurred while updating the flashcard')
       }
     }
 
     /**
-     * Loads collection data from the API
+     * Loads collection data from the API.
      */
     async #loadCollection() {
       try {
         const response = await fetch(
           `${this.#flashcardsAPI}/collections/${this.#collectionId}`,
           {
-            method: "GET",
+            method: 'GET',
             headers: {
               Authorization: `Bearer ${this.#token}`,
-              "Content-Type": "application/json",
-            },
+              'Content-Type': 'application/json'
+            }
           }
         )
 
         if (!response.ok) {
-          this.#showError("Could not load flashcards")
+          this.#showError('Could not load flashcards')
           return
         }
 
@@ -415,10 +429,10 @@ customElements.define(
         this.#cards = flashcardsData.map((card) => ({
           id: card.id,
           question: card.question,
-          answer: card.answer,
+          answer: card.answer
         }))
       } catch (error) {
-        this.#showError("An error occurred while loading flashcards")
+        this.#showError('An error occurred while loading flashcards')
         this.#cards = []
       } finally {
         this.#renderCards()
@@ -426,7 +440,7 @@ customElements.define(
     }
 
     /**
-     * Saves the collection settings
+     * Saves the collection settings.
      */
     async #saveSettings() {
       try {
@@ -434,9 +448,9 @@ customElements.define(
         const newDescription = this.#descriptionInput.value.trim()
 
         // Validate input
-        //:TODO: Validate the text length
+        // :TODO: Validate the text length
         if (!newName) {
-          this.#showError("Please enter a collection name")
+          this.#showError('Please enter a collection name')
           this.#collectionNameInput.focus()
           return
         }
@@ -446,21 +460,21 @@ customElements.define(
         const response = await fetch(
           `${this.#collectionAPI}/${this.#collectionId}`,
           {
-            method: "PATCH",
+            method: 'PATCH',
             headers: {
               Authorization: `Bearer ${this.#token}`,
-              "Content-Type": "application/json",
+              'Content-Type': 'application/json'
             },
             body: JSON.stringify({
               name: newName,
-              description: newDescription,
-            }),
+              description: newDescription
+            })
           }
         )
 
         if (!response.ok) {
           this.#showError(
-            "The name and/or the description could not be saved for some reason"
+            'The name and/or the description could not be saved for some reason'
           )
         }
 
@@ -468,18 +482,18 @@ customElements.define(
         this.#dbDescription = newDescription
 
         // Notify the parent component about the name change ang change it there as well
-        const event = new CustomEvent("uppdate-name", {
-          detail: this.#collectionName,
+        const event = new CustomEvent('uppdate-name', {
+          detail: this.#collectionName
         })
 
         this.dispatchEvent(event)
       } catch (error) {
-        this.#showError("An unexpected error occurred")
+        this.#showError('An unexpected error occurred')
       }
     }
 
     /**
-     * Deletes the collection
+     * Deletes the collection.
      */
     async #deleteCollection() {
       // Confirm deletion
@@ -497,37 +511,37 @@ customElements.define(
         const response = await fetch(
           `${this.#collectionAPI}/${this.#collectionId}`,
           {
-            method: "DELETE",
+            method: 'DELETE',
             headers: {
               Authorization: `Bearer ${this.#token}`,
-              "Content-Type": "application/json",
-            },
+              'Content-Type': 'application/json'
+            }
           }
         )
 
         if (!response.ok) {
           this.#errorMessage.textContent =
-            "The collection could not be deleted for some reason"
-          this.#errorMessage.style.display = "block"
+            'The collection could not be deleted for some reason'
+          this.#errorMessage.style.display = 'block'
         }
 
         // Notify the parent component about the name change ang change it there as well
-        const event = new CustomEvent("collection-deleted")
+        const event = new CustomEvent('collection-deleted')
 
         this.dispatchEvent(event)
 
         this.remove()
       } catch (error) {
-        this.#showError("The collection could not be deleted for some reason")
+        this.#showError('The collection could not be deleted for some reason')
         // console.error(error)
       }
     }
 
     /**
-     * Cancels the settings changes
+     * Cancels the settings changes.
      */
     #removeSettings() {
-      const event = new CustomEvent("settings-canceled")
+      const event = new CustomEvent('settings-canceled')
 
       this.dispatchEvent(event)
 
@@ -535,15 +549,15 @@ customElements.define(
     }
 
     /**
-     * Adds a flashcard to the collection
+     * Adds a flashcard to the collection.
      */
     async #addFlashcard() {
       const question = this.#questionInput.value.trim()
       const answer = this.#answerInput.value.trim()
 
-      //:TODO: Validate inputs length
+      // :TODO: Validate inputs length
       if (!question || !answer) {
-        this.#showError("Please enter both question and answer")
+        this.#showError('Please enter both question and answer')
         if (!question) this.#questionInput.focus()
         else this.#answerInput.focus()
         return
@@ -554,22 +568,22 @@ customElements.define(
       try {
         // Fetch collection data
         const response = await fetch(`${this.#flashcardsAPI}`, {
-          method: "POST",
+          method: 'POST',
           headers: {
             Authorization: `Bearer ${this.#token}`,
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            question: question,
-            answer: answer,
-            collectionId: this.#collectionId,
-          }),
+            question,
+            answer,
+            collectionId: this.#collectionId
+          })
         })
 
         if (!response.ok) {
-          //:TODO: Move the error to the add new card div
+          // :TODO: Move the error to the add new card div
           this.#showError(
-            "The question and answer could not be created for some reason"
+            'The question and answer could not be created for some reason'
           )
         } else {
           const flashcardData = await response.json()
@@ -581,18 +595,21 @@ customElements.define(
           this.#renderCards()
 
           // Clear inputs
-          this.#questionInput.value = ""
-          this.#answerInput.value = ""
+          this.#questionInput.value = ''
+          this.#answerInput.value = ''
           this.#questionInput.focus()
         }
       } catch (error) {
-        this.#showError("The flashcard could not be created for some reason")
+        this.#showError('The flashcard could not be created for some reason')
         // console.error(error)
       }
     }
 
     /**
-     * Removes a flashcard at the specified index
+     * Removes a flashcard at the specified index.
+     *
+     * @param {number} index - Index of the card to remove
+     * @returns {Promise<void>}
      */
     async #removeFlashcard(index) {
       if (index >= 0 && index < this.#cards.length) {
@@ -601,16 +618,16 @@ customElements.define(
           const response = await fetch(
             `${this.#flashcardsAPI}/${flashcard.id}`,
             {
-              method: "DELETE",
+              method: 'DELETE',
               headers: {
                 Authorization: `Bearer ${this.#token}`,
-                "Content-Type": "application/json",
-              },
+                'Content-Type': 'application/json'
+              }
             }
           )
 
           if (!response.ok) {
-            this.#showError("An error occurred while deleting the flashcard")
+            this.#showError('An error occurred while deleting the flashcard')
             return
           }
 
@@ -618,42 +635,42 @@ customElements.define(
           this.#cards.splice(index, 1)
           this.#renderCards()
         } catch (error) {
-          this.#showError("An error occurred while deleting the flashcard")
+          this.#showError('An error occurred while deleting the flashcard')
         }
       }
     }
 
     /**
-     * Renders the current list of cards
+     * Renders the current list of cards.
      */
     #renderCards() {
       // Clear existing cards
-      this.#cardsList.textContent = ""
+      this.#cardsList.textContent = ''
 
       // Update no cards message visibility
       if (this.#cards.length === 0) {
-        this.#noCardsMessage.style.display = "block"
+        this.#noCardsMessage.style.display = 'block'
       } else {
-        this.#noCardsMessage.style.display = "none"
+        this.#noCardsMessage.style.display = 'none'
       }
 
       // Render each card
       this.#cards.forEach((card, index) => {
-        const cardItem = document.createElement("li")
-        cardItem.className = "memora-card-item"
+        const cardItem = document.createElement('li')
+        cardItem.className = 'memora-card-item'
 
-        const questionDiv = document.createElement("div")
-        questionDiv.className = "memora-card-question"
+        const questionDiv = document.createElement('div')
+        questionDiv.className = 'memora-card-question'
         questionDiv.textContent = `Q: ${card.question}`
 
-        const answerDiv = document.createElement("div")
-        answerDiv.className = "memora-card-answer"
+        const answerDiv = document.createElement('div')
+        answerDiv.className = 'memora-card-answer'
         answerDiv.textContent = `A: ${card.answer}`
 
-        const removeButton = document.createElement("button")
-        removeButton.className = "memora-remove-card"
-        removeButton.textContent = "×"
-        removeButton.title = "Remove card"
+        const removeButton = document.createElement('button')
+        removeButton.className = 'memora-remove-card'
+        removeButton.textContent = '×'
+        removeButton.title = 'Remove card'
 
         cardItem.appendChild(questionDiv)
         cardItem.appendChild(answerDiv)
@@ -663,31 +680,36 @@ customElements.define(
       })
     }
 
+    /**
+     * Submits the collection for public publication.
+     *
+     * @returns {Promise<void>}
+     */
     async #submitCollectionForPublication() {
       try {
         const response = await fetch(
           `${this.#collectionAPI}/${this.#collectionId}/submit`,
           {
-            method: "POST",
+            method: 'POST',
             headers: {
               Authorization: `Bearer ${this.#token}`,
-              "Content-Type": "application/json",
-            },
+              'Content-Type': 'application/json'
+            }
           }
         )
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}))
           const errorMessage =
-            errorData.message || "Failed to submit collection"
+            errorData.message || 'Failed to submit collection'
           this.#showError(errorMessage)
           return
         }
 
         // Update UI to show submitted state
         this.#isSubmittedToPublic = true
-        this.#submissionStatusElement.style.display = "flex"
-        this.#makePublicBtn.style.display = "none"
+        this.#submissionStatusElement.style.display = 'flex'
+        this.#makePublicBtn.style.display = 'none'
       } catch (error) {
         // console.error(error)
       }

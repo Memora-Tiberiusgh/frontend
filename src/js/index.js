@@ -11,8 +11,8 @@
  * @version 1.0.0
  */
 
-import "./components/memora-app"
-import "./components/memora-login"
-import "./components/memora-main"
-import "./components/memora-terms"
-import "./components/memora-privacy"
+import './components/memora-app'
+import './components/memora-login'
+import './components/memora-main'
+import './components/memora-terms'
+import './components/memora-privacy'

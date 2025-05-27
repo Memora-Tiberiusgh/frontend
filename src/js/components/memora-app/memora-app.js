@@ -1,12 +1,12 @@
-import { htmlTemplate } from "./memora-app.html.js"
-import { cssTemplate } from "./memora-app.css.js"
-import { auth } from "../../services/firebase.js"
+import { htmlTemplate } from './memora-app.html.js'
+import { cssTemplate } from './memora-app.css.js'
+import { auth } from '../../services/firebase.js'
 
 // Get the API base URL from environment variables
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ""
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 
 customElements.define(
-  "memora-app",
+  'memora-app',
   /**
    * Extends the HTMLElement
    */
@@ -20,11 +20,11 @@ customElements.define(
      */
     constructor() {
       super()
-      this.attachShadow({ mode: "open" })
+      this.attachShadow({ mode: 'open' })
       this.shadowRoot.appendChild(htmlTemplate.content.cloneNode(true))
       this.shadowRoot.appendChild(cssTemplate.content.cloneNode(true))
 
-      this.#container = this.shadowRoot.getElementById("component-container")
+      this.#container = this.shadowRoot.getElementById('component-container')
     }
 
     /**
@@ -41,57 +41,69 @@ customElements.define(
       }
     }
 
-    // Clear all children from the container
+    /**
+     * Clears all child elements from the container.
+     */
     #clearContainer() {
       while (this.#container.firstChild) {
         this.#container.removeChild(this.#container.firstChild)
       }
     }
 
-    // Display console welcome message
+    /**
+     * Displays welcome message and contribution links in the console.
+     */
     #hello() {
       console.log(
-        "%cWelcome to Memora!",
-        "font-size: 16px; font-weight: bold; color: #4A7FB0;"
+        '%cWelcome to Memora!',
+        'font-size: 16px; font-weight: bold; color: #4A7FB0;'
       )
       console.log(
-        "%cDoes this page need fixes or improvements? Join our discussions or contribute to help make Memora more lovable.",
-        "font-size: 12px;"
+        '%cDoes this page need fixes or improvements? Join our discussions or contribute to help make Memora more lovable.',
+        'font-size: 12px;'
       )
       console.log(
-        "%c🤝 Contribute to Memora: https://github.com/Memora-Tiberiusgh",
-        "font-size: 12px; color: #4A7FB0;"
+        '%c🤝 Contribute to Memora: https://github.com/Memora-Tiberiusgh',
+        'font-size: 12px; color: #4A7FB0;'
       )
       console.log(
-        "%c💬 Join our discussions: https://github.com/orgs/Memora-Tiberiusgh/discussions",
-        "font-size: 12px; color: #4A7FB0;"
+        '%c💬 Join our discussions: https://github.com/orgs/Memora-Tiberiusgh/discussions',
+        'font-size: 12px; color: #4A7FB0;'
       )
     }
 
-    // Handle static pages (terms, privacy)
+    /**
+     * Handles routing for static pages like terms and privacy.
+     *
+     * @returns {boolean} True if a static page was handled, false otherwise.
+     */
     #handleStaticPages() {
       const path = window.location.pathname
 
-      if (path === "/terms.html") {
+      if (path === '/terms.html') {
         this.#clearContainer()
-        this.#container.appendChild(document.createElement("memora-terms"))
+        this.#container.appendChild(document.createElement('memora-terms'))
         return true
       }
 
-      if (path === "/privacy.html") {
+      if (path === '/privacy.html') {
         this.#clearContainer()
-        this.#container.appendChild(document.createElement("memora-privacy"))
+        this.#container.appendChild(document.createElement('memora-privacy'))
         return true
       }
 
       return false
     }
 
-    // Set up authentication listener
+    /**
+     * Sets up Firebase authentication state listener and handles user login status.
+     *
+     * @returns {Function} The unsubscribe function for the auth listener.
+     */
     #setupAuthListener() {
       // Start with login component
       this.#clearContainer()
-      this.#container.appendChild(document.createElement("memora-login"))
+      this.#container.appendChild(document.createElement('memora-login'))
 
       // Set up auth listener
       return auth.onAuthStateChanged(async (user) => {
@@ -101,7 +113,12 @@ customElements.define(
       })
     }
 
-    // Handle logged in user
+    /**
+     * Handles the user authentication flow and displays the main application.
+     *
+     * @param {object} user - Firebase user object.
+     * @returns {Promise<void>}
+     */
     async #handleLoggedInUser(user) {
       this.#clearContainer()
 
@@ -118,50 +135,64 @@ customElements.define(
       }
     }
 
-    // Create user in backend
+    /**
+     * Creates or updates user data in the backend database.
+     *
+     * @param {object} user - Firebase user object.
+     * @param {string} token - Firebase ID token for authentication.
+     * @returns {Promise<void>}
+     */
     async #createUserInBackend(user, token) {
       const signal = this.#abortController.signal
 
       await fetch(this.#userCreateURL, {
-        method: "POST",
+        method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           uid: user.uid,
           displayName: user.displayName,
-          email: user.email,
+          email: user.email
         }),
-        signal,
+        signal
       })
     }
 
-    // Create main component
+    /**
+     * Creates and configures the main application component with user data.
+     *
+     * @param {object} user - Firebase user object.
+     * @param {string} token - Firebase ID token for authentication.
+     * @returns {HTMLElement} The configured main component element.
+     */
     #createMainComponent(user, token) {
-      const mainComponent = document.createElement("memora-main")
+      const mainComponent = document.createElement('memora-main')
       mainComponent.userProfile = {
         uid: user.uid,
         displayName: user.displayName,
         email: user.email,
-        token: token,
+        token
       }
 
       // Handle logout event
-      mainComponent.addEventListener("memora-logout", () => {
+      mainComponent.addEventListener('memora-logout', () => {
         auth.signOut()
         this.#clearContainer()
-        this.#container.appendChild(document.createElement("memora-login"))
+        this.#container.appendChild(document.createElement('memora-login'))
       })
 
       return mainComponent
     }
 
-    // Display error message
+    /**
+     * Displays a generic error message to the user.
+     */
     #displayError() {
       this.#clearContainer()
-      const errorElement = document.createElement("div")
-      errorElement.textContent = "An error occurred. I suggest to try again."
+      const errorElement = document.createElement('div')
+      errorElement.textContent = 'An error occurred. I suggest to try again.'
       this.#container.appendChild(errorElement)
     }
 

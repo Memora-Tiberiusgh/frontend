@@ -3,7 +3,7 @@
  * @module memora-settings.css
  */
 // Define the CSS template.
-export const cssTemplate = document.createElement("template");
+export const cssTemplate = document.createElement('template')
 cssTemplate.innerHTML = `
 <style>
     :host {
@@ -543,4 +543,4 @@ cssTemplate.innerHTML = `
         }
     }
 </style>
-`;
+`

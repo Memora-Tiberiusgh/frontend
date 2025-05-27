@@ -1,13 +1,13 @@
-import { htmlTemplate } from "./memora-public.html.js"
-import { cssTemplate } from "./memora-public.css.js"
+import { htmlTemplate } from './memora-public.html.js'
+import { cssTemplate } from './memora-public.css.js'
 
 // Get the API base URL from environment variables
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ""
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 
 customElements.define(
-  "memora-public",
+  'memora-public',
   /**
-   * Extends the HTMLElement
+   * Extends the HTMLElement.
    */
   class extends HTMLElement {
     #abortController = new AbortController()
@@ -22,42 +22,42 @@ customElements.define(
      */
     constructor() {
       super()
-      this.attachShadow({ mode: "open" })
+      this.attachShadow({ mode: 'open' })
       this.shadowRoot.appendChild(htmlTemplate.content.cloneNode(true))
       this.shadowRoot.appendChild(cssTemplate.content.cloneNode(true))
 
       // Views
-      this.gridView = this.shadowRoot.querySelector(".memora-grid-view")
-      this.detailView = this.shadowRoot.querySelector(".memora-detail-view")
+      this.gridView = this.shadowRoot.querySelector('.memora-grid-view')
+      this.detailView = this.shadowRoot.querySelector('.memora-detail-view')
 
       // Grid elements
       this.collectionsGrid = this.shadowRoot.querySelector(
-        ".memora-collections-grid"
+        '.memora-collections-grid'
       )
       this.noMoreCollections = this.shadowRoot.querySelector(
-        ".memora-no-more-collections"
+        '.memora-no-more-collections'
       )
 
       // Detail elements
-      this.addButton = this.shadowRoot.querySelector(".memora-add-button")
-      this.detailTitle = this.shadowRoot.querySelector(".memora-detail-title")
+      this.addButton = this.shadowRoot.querySelector('.memora-add-button')
+      this.detailTitle = this.shadowRoot.querySelector('.memora-detail-title')
       this.detailTitleContainer = this.shadowRoot.querySelector(
-        ".memora-detail-title-container"
+        '.memora-detail-title-container'
       )
       this.descriptionText = this.shadowRoot.querySelector(
-        ".memora-description-text"
+        '.memora-description-text'
       )
-      this.cardsCount = this.shadowRoot.querySelector(".memora-cards-count")
-      this.createdDate = this.shadowRoot.querySelector(".memora-created-date")
-      this.creatorName = this.shadowRoot.querySelector(".memora-creator-name")
+      this.cardsCount = this.shadowRoot.querySelector('.memora-cards-count')
+      this.createdDate = this.shadowRoot.querySelector('.memora-created-date')
+      this.creatorName = this.shadowRoot.querySelector('.memora-creator-name')
       this.previewCards = this.shadowRoot.querySelectorAll(
-        ".memora-preview-card"
+        '.memora-preview-card'
       )
-      this.backButton = this.shadowRoot.querySelector(".memora-back-button")
+      this.backButton = this.shadowRoot.querySelector('.memora-back-button')
 
       // Templates
       this.collectionCardTemplate = this.shadowRoot.querySelector(
-        "#collection-card-template"
+        '#collection-card-template'
       )
     }
 
@@ -67,7 +67,7 @@ customElements.define(
      * @returns {string[]} The list of attributes to be observed.
      */
     static get observedAttributes() {
-      return ["token"]
+      return ['token']
     }
 
     /**
@@ -78,7 +78,7 @@ customElements.define(
      * @param {string} newValue The new value of the attribute.
      */
     attributeChangedCallback(name, oldValue, newValue) {
-      if (name === "token" && newValue !== oldValue) {
+      if (name === 'token' && newValue !== oldValue) {
         this.#token = newValue
         // Optionally refetch data when token changes
         if (this.isConnected) {
@@ -94,33 +94,33 @@ customElements.define(
       const signal = this.#abortController.signal
 
       // Add event listeners
-      this.backButton.addEventListener("click", () => this.#goBackToGrid(), {
-        signal,
+      this.backButton.addEventListener('click', () => this.#goBackToGrid(), {
+        signal
       })
 
       this.addButton.addEventListener(
-        "click",
+        'click',
         () => this.#addToMyCollection(),
         {
-          signal,
+          signal
         }
       )
 
       // Add toggle functionality to all hardcoded preview cards
       this.previewCards.forEach((card) => {
-        const questionElement = card.querySelector(".memora-preview-question")
-        const answerElement = card.querySelector(".memora-preview-answer")
-        const toggleIcon = card.querySelector(".memora-toggle-icon")
+        const questionElement = card.querySelector('.memora-preview-question')
+        const answerElement = card.querySelector('.memora-preview-answer')
+        const toggleIcon = card.querySelector('.memora-toggle-icon')
 
         questionElement.addEventListener(
-          "click",
+          'click',
           () => {
-            if (answerElement.style.display === "none") {
-              answerElement.style.display = "block"
-              toggleIcon.textContent = "↑"
+            if (answerElement.style.display === 'none') {
+              answerElement.style.display = 'block'
+              toggleIcon.textContent = '↑'
             } else {
-              answerElement.style.display = "none"
-              toggleIcon.textContent = "↓"
+              answerElement.style.display = 'none'
+              toggleIcon.textContent = '↓'
             }
           },
           { signal }
@@ -132,22 +132,22 @@ customElements.define(
     }
 
     /**
-     * Fetch collections from the backend
+     * Fetch collections from the backend.
      */
     async #fetchCollections() {
       if (!this.#token) return
 
       try {
         const response = await fetch(this.#publicCollectionURL, {
-          method: "GET",
+          method: 'GET',
           headers: {
             Authorization: `Bearer ${this.#token}`,
-            "Content-type": "application/json",
-          },
+            'Content-type': 'application/json'
+          }
         })
 
         if (!response.ok) {
-          throw new Error("API error: " + response.status)
+          throw new Error('API error: ' + response.status)
         }
 
         const collections = await response.json()
@@ -159,9 +159,9 @@ customElements.define(
         // Show "No more collections" indicator if there are collections
         // This can be controlled by your infinite scroll logic later
         if (collections.length > 0) {
-          this.noMoreCollections.style.display = "block"
+          this.noMoreCollections.style.display = 'block'
         } else {
-          this.noMoreCollections.style.display = "none"
+          this.noMoreCollections.style.display = 'none'
         }
       } catch (error) {
         // console.error("Error fetching collections:", error)
@@ -169,7 +169,7 @@ customElements.define(
     }
 
     /**
-     * Add the selected collection to my collection
+     * Add the selected collection to my collection.
      */
     async #addToMyCollection() {
       if (!this.#token || !this.#selectedCollection) return
@@ -181,17 +181,17 @@ customElements.define(
 
       // Disable import button
       this.addButton.disabled = true
-      this.addButton.textContent = "Adding..."
+      this.addButton.textContent = 'Adding...'
 
       try {
         const response = await fetch(
           `${this.#toggleCollectionURL}/${this.#selectedCollection._id}`,
           {
-            method: "PUT",
+            method: 'PUT',
             headers: {
               Authorization: `Bearer ${this.#token}`,
-              "Content-Type": "application/json",
-            },
+              'Content-Type': 'application/json'
+            }
           }
         )
         if (response.ok) {
@@ -207,54 +207,54 @@ customElements.define(
           }
 
           // Add the tag to the detail view
-          const detailTag = document.createElement("span")
-          detailTag.className = "memora-library-tag memora-detail-tag"
-          detailTag.textContent = "Added"
+          const detailTag = document.createElement('span')
+          detailTag.className = 'memora-library-tag memora-detail-tag'
+          detailTag.textContent = 'Added'
 
           // Get the title container
           const titleContainer = this.shadowRoot.querySelector(
-            ".memora-detail-title-container"
+            '.memora-detail-title-container'
           )
 
           // Add tag after the title if it doesn't exist yet
           if (
             titleContainer &&
-            !titleContainer.querySelector(".memora-detail-tag")
+            !titleContainer.querySelector('.memora-detail-tag')
           ) {
             titleContainer.appendChild(detailTag)
           }
 
           // Update button
           this.addButton.disabled = true
-          this.addButton.textContent = "Already in your library"
-          this.addButton.classList.add("memora-button-disabled")
+          this.addButton.textContent = 'Already in your library'
+          this.addButton.classList.add('memora-button-disabled')
 
           // Dispatch event for parent components
           this.dispatchEvent(
-            new CustomEvent("add-collection", {
+            new CustomEvent('add-collection', {
               detail: {
                 id: this.#selectedCollection._id,
                 name: this.#selectedCollection.name,
-                isPublic: true,
-              },
+                isPublic: true
+              }
             })
           )
         } else {
           // Reset button state on error
           this.addButton.disabled = false
-          this.addButton.textContent = "Add to my collection"
+          this.addButton.textContent = 'Add to my collection'
 
-          //:TODO: Add error message
+          // :TODO: Add error message
         }
       } catch (error) {
         // console.error("Error importing collection:", error.)
         this.addButton.disabled = false
-        this.addButton.textContent = "Add to my collection"
+        this.addButton.textContent = 'Add to my collection'
       }
     }
 
     /**
-     * Go back to the collections grid
+     * Go back to the collections grid.
      */
     #goBackToGrid() {
       // Render the collections grid with updated data
@@ -264,24 +264,27 @@ customElements.define(
       this.#selectedCollection = null
 
       // Show grid view, hide detail view
-      this.gridView.style.display = "block"
-      this.detailView.style.display = "none"
+      this.gridView.style.display = 'block'
+      this.detailView.style.display = 'none'
     }
 
     /**
-     * Format date to a readable string
+     * Formats a date string into a readable format.
+     *
+     * @param {string} dateString - ISO date string to format
+     * @returns {string} Formatted date string (e.g., "Jan 15, 2024")
      */
     #formatDate(dateString) {
       const date = new Date(dateString)
-      return date.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
       })
     }
 
     /**
-     * Render the collections grid
+     * Render the collections grid.
      */
     #renderCollectionsGrid() {
       // Clear existing grid
@@ -296,39 +299,42 @@ customElements.define(
       })
 
       // Show grid view, hide detail view
-      this.gridView.style.display = "block"
-      this.detailView.style.display = "none"
+      this.gridView.style.display = 'block'
+      this.detailView.style.display = 'none'
     }
 
     /**
-     * Create a collection card element
+     * Creates a collection card element with event listeners.
+     *
+     * @param {object} collection - Collection object containing name, cardCount, description, etc.
+     * @returns {DocumentFragment} Cloned template with populated collection data
      */
     #createCollectionCard(collection) {
       const card = this.collectionCardTemplate.content.cloneNode(true)
 
-      const cardElement = card.querySelector(".memora-collection-card")
-      const titleContainer = card.querySelector(".memora-card-title-container")
-      const cardTitle = card.querySelector(".memora-card-title")
-      const cardCount = card.querySelector(".memora-card-count")
-      const cardDescription = card.querySelector(".memora-card-description")
-      const ownerName = card.querySelector(".memora-owner-name")
-      const creationDate = card.querySelector(".memora-creation-date")
+      const cardElement = card.querySelector('.memora-collection-card')
+      const titleContainer = card.querySelector('.memora-card-title-container')
+      const cardTitle = card.querySelector('.memora-card-title')
+      const cardCount = card.querySelector('.memora-card-count')
+      const cardDescription = card.querySelector('.memora-card-description')
+      const ownerName = card.querySelector('.memora-owner-name')
+      const creationDate = card.querySelector('.memora-creation-date')
 
       // Set text content
       cardTitle.textContent = collection.name
       cardCount.textContent = collection.cardCount
       cardDescription.textContent = collection.description
-      ownerName.textContent = collection.creatorName || "Unknown"
+      ownerName.textContent = collection.creatorName || 'Unknown'
       creationDate.textContent = this.#formatDate(collection.createdAt)
 
       // Add visual indicator if collection is already in library
       if (collection.isAddedByUser) {
-        cardElement.classList.add("memora-in-library")
+        cardElement.classList.add('memora-in-library')
 
         // Create tag indicator
-        const tag = document.createElement("span")
-        tag.className = "memora-library-tag"
-        tag.textContent = "Added"
+        const tag = document.createElement('span')
+        tag.className = 'memora-library-tag'
+        tag.textContent = 'Added'
 
         // Insert the tag into the title container, after the title
         titleContainer.appendChild(tag)
@@ -340,7 +346,7 @@ customElements.define(
       // Add click event listener
       const signal = this.#abortController.signal
       cardElement.addEventListener(
-        "click",
+        'click',
         (event) => {
           const id = event.currentTarget.dataset.id
           // Call the method that displays collection detail
@@ -353,7 +359,9 @@ customElements.define(
     }
 
     /**
-     * Display collection detail - no need to fetch since we already have the data
+     * Displays the detail view for a specific collection.
+     *
+     * @param {string} collectionId - ID of the collection to display details for
      */
     #displayCollectionDetail(collectionId) {
       // Find the collection in our local data
@@ -362,7 +370,7 @@ customElements.define(
       )
 
       if (!this.#selectedCollection) {
-        console.error("Collection not found:", collectionId)
+        console.error('Collection not found:', collectionId)
         return
       }
       // Render the details
@@ -370,7 +378,7 @@ customElements.define(
     }
 
     /**
-     * Render the collection detail view
+     * Render the collection detail view.
      */
     #renderCollectionDetail() {
       if (!this.#selectedCollection) return
@@ -386,73 +394,75 @@ customElements.define(
 
       // Remove existing tag if present
       const existingTag =
-        this.detailTitleContainer.querySelector(".memora-detail-tag")
+        this.detailTitleContainer.querySelector('.memora-detail-tag')
       if (existingTag) {
         existingTag.remove()
       }
 
       // Add tag if collection is in library
       if (collection.isAddedByUser) {
-        const detailTag = document.createElement("span")
-        detailTag.className = "memora-library-tag memora-detail-tag"
-        detailTag.textContent = "Added"
+        const detailTag = document.createElement('span')
+        detailTag.className = 'memora-library-tag memora-detail-tag'
+        detailTag.textContent = 'Added'
 
         // Add the tag directly to the title container
         this.detailTitleContainer.appendChild(detailTag)
 
         // Update button state
         this.addButton.disabled = true
-        this.addButton.textContent = "Already in your library"
-        this.addButton.classList.add("memora-button-disabled")
+        this.addButton.textContent = 'Already in your library'
+        this.addButton.classList.add('memora-button-disabled')
       } else {
         // Reset button if not in library
         this.addButton.disabled = false
-        this.addButton.textContent = "Add to my collection"
-        this.addButton.classList.remove("memora-button-disabled")
+        this.addButton.textContent = 'Add to my collection'
+        this.addButton.classList.remove('memora-button-disabled')
       }
 
       // Update the preview cards (always 5 of them)
       this.#updatePreviewCards(collection.previewCards || [])
 
       // Show detail view, hide grid view
-      this.gridView.style.display = "none"
-      this.detailView.style.display = "block"
+      this.gridView.style.display = 'none'
+      this.detailView.style.display = 'block'
     }
 
     /**
-     * Update the static preview cards with the data
+     * Updates the preview cards display with provided card data.
+     *
+     * @param {Array} previewCards - Array of card objects containing question and answer properties
      */
     #updatePreviewCards(previewCards) {
       // Reset all cards first
       this.previewCards.forEach((card) => {
-        const questionText = card.querySelector(".memora-question-text")
-        const answerText = card.querySelector(".memora-answer-text")
-        const answerElement = card.querySelector(".memora-preview-answer")
-        const toggleIcon = card.querySelector(".memora-toggle-icon")
+        const questionText = card.querySelector('.memora-question-text')
+        const answerText = card.querySelector('.memora-answer-text')
+        const answerElement = card.querySelector('.memora-preview-answer')
+        const toggleIcon = card.querySelector('.memora-toggle-icon')
 
         // Reset content and state
-        questionText.textContent = "No question available"
-        answerText.textContent = "No answer available"
-        answerElement.style.display = "none"
-        toggleIcon.textContent = "↓"
+        questionText.textContent = 'No question available'
+        answerText.textContent = 'No answer available'
+        answerElement.style.display = 'none'
+        toggleIcon.textContent = '↓'
 
         // Hide cards initially if we don't have enough data
-        card.style.display = "none"
+        card.style.display = 'none'
       })
 
       // Update with available data
       previewCards.forEach((cardData, index) => {
         if (index < this.previewCards.length) {
           const card = this.previewCards[index]
-          const questionText = card.querySelector(".memora-question-text")
-          const answerText = card.querySelector(".memora-answer-text")
+          const questionText = card.querySelector('.memora-question-text')
+          const answerText = card.querySelector('.memora-answer-text')
 
           // Set content
           questionText.textContent = cardData.question
           answerText.textContent = cardData.answer
 
           // Show this card
-          card.style.display = "block"
+          card.style.display = 'block'
         }
       })
     }

@@ -2,13 +2,19 @@
  * Terms of Service component for Memora
  */
 customElements.define(
-  "memora-terms",
+  'memora-terms',
+  /**
+   * Custom page for terms policy.
+   */
   class extends HTMLElement {
+    /**
+     * Creates an instance of MemoraTerms and sets up the shadow DOM.
+     */
     constructor() {
       super()
 
       // Create the DOM structure
-      const template = document.createElement("template")
+      const template = document.createElement('template')
       template.innerHTML = `
                 <style>
                     * {
@@ -104,18 +110,20 @@ customElements.define(
             `
 
       // Attach the shadow DOM and add the template content
-      this.attachShadow({ mode: "open" })
+      this.attachShadow({ mode: 'open' })
       this.shadowRoot.appendChild(template.content.cloneNode(true))
 
       // Add event listener to the close button
-      this.shadowRoot.querySelector(".button").addEventListener("click", () => {
+      this.shadowRoot.querySelector('.button').addEventListener('click', () => {
         window.close()
       })
     }
 
-    // Set the document title when component is connected
+    /**
+     * Called when element is connected to the DOM.
+     */
     connectedCallback() {
-      document.title = "Memora - Terms of Service"
+      document.title = 'Memora - Terms of Service'
     }
   }
 )

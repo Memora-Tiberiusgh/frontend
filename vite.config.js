@@ -1,18 +1,18 @@
 //TEST
 export default {
-  root: "src",
+  root: 'src',
   build: {
-    outDir: "../dist",
-    target: "esnext",
+    outDir: '../dist',
+    target: 'esnext'
   },
   server: {
-    host: "0.0.0.0",
+    host: '0.0.0.0',
     port: 5173,
-    allowedHosts: ["cscloud8-66.lnu.se"],
+    allowedHosts: ['cscloud8-66.lnu.se']
   },
-  envPrefix: "VITE_",
+  envPrefix: 'VITE_',
   test: {
-    environment: "jsdom",
-    globals: true,
-  },
+    environment: 'jsdom',
+    globals: true
+  }
 }
