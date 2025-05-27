@@ -3,7 +3,7 @@
  * @module memora-collection.css
  */
 // Define the CSS template.
-export const cssTemplate = document.createElement("template")
+export const cssTemplate = document.createElement('template')
 cssTemplate.innerHTML = `
 <style>
     :host {

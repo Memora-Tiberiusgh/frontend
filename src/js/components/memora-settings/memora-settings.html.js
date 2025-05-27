@@ -3,7 +3,7 @@
  * @module memora-settings.html
  */
 // Define the HTML template.
-export const htmlTemplate = document.createElement("template")
+export const htmlTemplate = document.createElement('template')
 htmlTemplate.innerHTML = `
   <div class="memora-settings">
     <div class="memora-settings-header">

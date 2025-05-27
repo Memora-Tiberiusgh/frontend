@@ -2,13 +2,18 @@
  * Privacy Policy component for Memora
  */
 customElements.define(
-  "memora-privacy",
+  'memora-privacy',
+  /**
+   * Custom page for privacy policy.
+   */
   class extends HTMLElement {
+    /**
+     * Creates an instance of MemoraPrivacy and sets up the shadow DOM.
+     */
     constructor() {
       super()
-
       // Create the DOM structure
-      const template = document.createElement("template")
+      const template = document.createElement('template')
       template.innerHTML = `
                 <style>
                     * {
@@ -148,18 +153,20 @@ customElements.define(
             `
 
       // Attach the shadow DOM and add the template content
-      this.attachShadow({ mode: "open" })
+      this.attachShadow({ mode: 'open' })
       this.shadowRoot.appendChild(template.content.cloneNode(true))
 
       // Add event listener to the close button
-      this.shadowRoot.querySelector(".button").addEventListener("click", () => {
+      this.shadowRoot.querySelector('.button').addEventListener('click', () => {
         window.close()
       })
     }
 
-    // Set the document title when component is connected
+    /**
+     * Called when element is connected to the DOM.
+     */
     connectedCallback() {
-      document.title = "Memora - Privacy Policy"
+      document.title = 'Memora - Privacy Policy'
     }
   }
 )
