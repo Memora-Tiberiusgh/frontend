@@ -132,6 +132,23 @@ The application is built using native Web Components with Shadow DOM for style e
 - Event-driven communication between components
 - No external frameworks - vanilla JavaScript only
 
+## Screenshots & Demo
+
+### Login interface
+
+![App Screenshot](.img/memora_login.png)
+_Main login interface_
+
+### Review Interface
+
+![Review](.img/memora_review.png)
+_Flashcard review interface with bookmark and random mode features_
+
+### Demo gif
+
+![Memora Demo](.img/memora.gif)
+_A gif showcasing the application interface_
+
 ## Contributing
 
 1. Fork the repository
