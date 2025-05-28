@@ -81,7 +81,7 @@ cd orchestrator
 docker build -f Dockerfile.dev -t memora-frontend-dev .
 
 # Production
-docker build -f Dockerfile.prod -t memora-frontend-prod .
+docker build -t memora-frontend-prod .
 ```
 
 ### Local Production Build
