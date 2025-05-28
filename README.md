@@ -2,7 +2,7 @@
 
 A modern flashcard application built with Web Components, featuring Firebase authentication and a clean, responsive interface.
 
-## Features
+## 🚀 Features
 
 - **Authentication**: Multi-provider login (Google, GitHub, Facebook) with Firebase Auth. With account linking between different providers.
 - **Collection Management**: Create, edit, and organize flashcard collections
@@ -149,7 +149,7 @@ _Flashcard review interface with bookmark and random mode features_
 ![Memora Demo](.img/memora.gif)
 _A gif showcasing the application interface_
 
-## Contributing
+## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch
@@ -163,4 +163,12 @@ This project is licensed under the MIT License.
 
 ## Support
 
-For issues and feature requests, please visit our [GitHub Discussions](https://github.com/orgs/Memora-Tiberiusgh/discussions) or contribute to the project at [GitHub Repository](https://github.com/Memora-Tiberiusgh).
+For issues and feature requests, please visit our [GitHub Discussions](https://github.com/orgs/Memora-Tiberiusgh/discussions) or contribute to the project at [GitHub organization](https://github.com/Memora-Tiberiusgh).
+
+## Author
+
+**Tiberius Gherac** - [tiberius.gherac@gmail.com](mailto:tiberius.gherac@gmail.com)
+First-year Web Development Student @ Linnaeus University  
+GitHub: [@TiberiusGh](https://github.com/TiberiusGh)
+
+---
