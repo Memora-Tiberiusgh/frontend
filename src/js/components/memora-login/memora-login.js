@@ -3,9 +3,9 @@ import { cssTemplate } from './memora-login.css.js'
 import {
   GoogleAuthProvider,
   GithubAuthProvider,
-  FacebookAuthProvider,
   signInWithPopup,
-  linkWithCredential
+  linkWithCredential,
+  signInAnonymously
 } from 'firebase/auth'
 import { auth } from '../../services/firebase.js'
 
@@ -19,7 +19,7 @@ customElements.define(
 
     #githubLoginBtn
     #googleLoginBtn
-    #facebookLoginBtn
+    #anonymousLoginBtn
 
     /**
      * Creates an instance of MemoraLogin and attaches shadow DOM.
@@ -37,7 +37,7 @@ customElements.define(
      * Handles account linking when an email is already used through another provider.
      *
      * @param {Error} error - Firebase authentication error
-     * @param {string} providerName - Name of the provider ('GitHub', 'Facebook', or 'Google')
+     * @param {string} providerName - Name of the provider ('GitHub' or 'Google')
      * @returns {Promise<void>}
      */
     async handleAccountLinking(error, providerName) {
@@ -54,8 +54,6 @@ customElements.define(
       let pendingCred = null
       if (providerName === 'GitHub') {
         pendingCred = GithubAuthProvider.credentialFromError(error)
-      } else if (providerName === 'Facebook') {
-        pendingCred = FacebookAuthProvider.credentialFromError(error)
       } else if (providerName === 'Google') {
         pendingCred = GoogleAuthProvider.credentialFromError(error)
       }
@@ -86,7 +84,8 @@ customElements.define(
     connectedCallback() {
       this.#googleLoginBtn = this.shadowRoot.querySelector('#google-login')
       this.#githubLoginBtn = this.shadowRoot.querySelector('#github-login')
-      this.#facebookLoginBtn = this.shadowRoot.querySelector('#facebook-login')
+      this.#anonymousLoginBtn =
+        this.shadowRoot.querySelector('#anonymous-login')
 
       this.#setupEventlisteners()
     }
@@ -125,16 +124,14 @@ customElements.define(
         { signal: this.#abortController.signal }
       )
 
-      // Set up the Facebook login button
-      this.#facebookLoginBtn.addEventListener(
+      // Set up the Anonymous login button
+      this.#anonymousLoginBtn.addEventListener(
         'click',
         async () => {
           try {
-            const provider = new FacebookAuthProvider()
-            provider.addScope('email')
-            await signInWithPopup(auth, provider)
+            await signInAnonymously(auth)
           } catch (error) {
-            await this.handleAccountLinking(error, 'Facebook')
+            // :TODO: Add UI for informing the user about the error
           }
         },
         { signal: this.#abortController.signal }

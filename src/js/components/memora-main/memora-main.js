@@ -216,12 +216,14 @@ customElements.define(
       if (!this.#userProfile) return
 
       // Update user name and email
-      if (this.#userNameElement && this.#userProfile.displayName) {
-        this.#userNameElement.textContent = this.#userProfile.displayName
+      if (this.#userNameElement) {
+        this.#userNameElement.textContent =
+          this.#userProfile.displayName || 'Guest Learner'
       }
 
-      if (this.#userEmailElement && this.#userProfile.email) {
-        this.#userEmailElement.textContent = this.#userProfile.email
+      if (this.#userEmailElement) {
+        this.#userEmailElement.textContent =
+          this.#userProfile.email || 'whoami@nobody.knows'
       }
 
       // Generate and update avatar initials
@@ -235,14 +237,15 @@ customElements.define(
 
     /**
      * Generates initials from a user's name.
-     * Handles cases with multiple names.
+     * Handles cases with multiple names and anonymous users.
      *
      * @param {string} name The user's name
+     * @param {boolean} isAnonymous Whether the user is anonymous
      * @returns {string} The user's initials (up to 2 characters)
      */
     #generateInitials(name) {
       // If no name is provided, return a default
-      if (!name || name.trim() === '') return 'Ghost'
+      if (!name || name.trim() === '') return '?'
 
       // For email addresses, use the first character
       if (name.includes('@')) {
