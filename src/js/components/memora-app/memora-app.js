@@ -80,13 +80,13 @@ customElements.define(
     #handleStaticPages() {
       const path = window.location.pathname
 
-      if (path === '/terms.html') {
+      if (path === '/terms') {
         this.#clearContainer()
         this.#container.appendChild(document.createElement('memora-terms'))
         return true
       }
 
-      if (path === '/privacy.html') {
+      if (path === '/privacy') {
         this.#clearContainer()
         this.#container.appendChild(document.createElement('memora-privacy'))
         return true
