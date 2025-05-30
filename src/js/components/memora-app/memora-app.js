@@ -107,8 +107,18 @@ customElements.define(
 
       // Set up auth listener
       return auth.onAuthStateChanged(async (user) => {
+        // Don't override static pages (terms and privacy) with auth flow
+        const isStaticPage = this.#handleStaticPages()
+        if (isStaticPage) {
+          return // Exit early if we're on a static page
+        }
+
         if (user) {
           await this.#handleLoggedInUser(user)
+        } else {
+          // Only show login if we're not on a static page
+          this.#clearContainer()
+          this.#container.appendChild(document.createElement('memora-login'))
         }
       })
     }
