@@ -2,7 +2,7 @@
 
 A modern flashcard application built with Web Components, featuring Firebase authentication and a clean, responsive interface.
 
-🌐 **Live Demo**: [memora.tiberiusgh.com](https://memora.tiberiusgh.com)
+🌐 **Live at**: [memora.tiberiusgh.com](https://memora.tiberiusgh.com)
 
 ## 🚀 Features
 
