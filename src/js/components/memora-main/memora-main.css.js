@@ -428,6 +428,9 @@ cssTemplate.innerHTML = `
 
     /* For very small screens */
     @media (max-width: 576px) {
+        .memora-main-content {
+            padding: 10px 10px 70px 10px;
+        }
         .memora-header {
             flex-direction: column;
             align-items: flex-start;

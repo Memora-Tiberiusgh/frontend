@@ -452,6 +452,9 @@ cssTemplate.innerHTML = `
 
     /* Responsive adjustments */
     @media (max-width: 640px) {
+        .memora-flashcard-view {
+            padding: 0;
+        }
         
         .memora-content-wrapper {
             max-width: 100%;
